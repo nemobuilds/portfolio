@@ -52,8 +52,9 @@
   --focus-halo: #17161C;
 }
 
-/* Home: light text/halo follow the theme; water tokens above are fixed */
-[data-surface="home"][data-theme="light"] {
+/* Home never follows data-theme: water gradient, ink text, cream halo.
+   :root[...] outranks the plain [data-theme="dark"] block whatever the order. */
+:root[data-surface="home"] {
   --text: #17161C;
   --text-secondary: #3A4058;
   --date: #9A3A0E;
@@ -66,6 +67,11 @@ html {
   color: var(--text);
   font-family: var(--font-sans);
   transition: background-color 300ms ease, color 300ms ease;
+}
+
+:root[data-surface="home"],
+:root[data-surface="home"] body {
+  background: var(--water-surface);
 }
 
 body {
@@ -96,14 +102,20 @@ body {
   color: var(--ember);
 }
 
+:root[data-surface="home"] .accent-word {
+  color: var(--serif-accent);
+}
+
 .surface-glass {
   background: var(--glass-light);
   border: 1px solid var(--glass-edge);
   backdrop-filter: blur(12px);
 }
 
-[data-theme="dark"] .surface-glass {
+/* Deep sections only; never keyed on data-theme */
+.surface-glass--deep {
   background: var(--glass-dark);
+  color: var(--cream);
 }
 
 .surface-slate {
