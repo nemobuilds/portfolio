@@ -47,3 +47,9 @@ test('glass is not keyed on data-theme; deep modifier uses dark glass', () => {
 test('gauge depth numbers are not faded (0.8 opacity failed 4.5:1 on shallows and reef)', () => {
   expect(block('.depth-gauge__m')).not.toMatch(/opacity/)
 })
+
+test('color-scheme follows the theme; home stays light', () => {
+  expect(block('[data-surface="sub"][data-theme="light"]')).toContain('color-scheme: light')
+  expect(block('[data-theme="dark"]')).toContain('color-scheme: dark')
+  expect(block(':root[data-surface="home"]')).toContain('color-scheme: light')
+})

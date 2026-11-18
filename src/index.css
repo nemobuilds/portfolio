@@ -26,6 +26,7 @@
 /* Subpage light is the default until data-surface is set from the route (Task 6) */
 :root,
 [data-surface="sub"][data-theme="light"] {
+  color-scheme: light;
   --page-top: #E9F0F9;
   --page-bottom: #C9D8F0;
   --card-fill: linear-gradient(#EBEFF5, #DDE3EC);
@@ -46,6 +47,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --page-top: #121A4A;
   --page-bottom: #05080F;
   --card-fill: linear-gradient(#2D313A, #20232A);
@@ -68,6 +70,7 @@
 /* Home never follows data-theme: water gradient, ink text, cream halo.
    :root[...] outranks the plain [data-theme="dark"] block whatever the order. */
 :root[data-surface="home"] {
+  color-scheme: light;
   --page-top: #E9F0F9;
   --page-bottom: #C9D8F0;
   --card-fill: linear-gradient(#EBEFF5, #DDE3EC);
