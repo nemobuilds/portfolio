@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './theme/ThemeProvider'
 import { BootScreen } from './boot/BootScreen'
 import { shouldBoot } from './boot/bootProgress'
+import { ScrollToTop } from './Components/ScrollToTop'
 import HomePage from './Pages/HomePage'
 import CertificatesPage from './Pages/CertificatesPage'
 import CaseStudyPage from './Pages/CaseStudyPage'
@@ -22,6 +23,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
+      <ScrollToTop />
       {booting && <BootScreen onDone={() => setBooting(false)} />}
       <div inert={booting}>
         <Routes>
