@@ -18,6 +18,7 @@
   --glass-edge: rgb(60 82 140 / 0.75);
   --serif-accent: #22345F;
   --ember: #FF9A52;
+  --ember-text: #FFC496; /* body-size ember text on dark glass (AA); --ember is for large text */
   --ink: #17161C;
   --cream: #F4EEE3;
 }

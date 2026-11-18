@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import Experience from './Experience'
@@ -16,6 +18,14 @@ describe('Experience', () => {
     expect(screen.getByText('Backend & site reliability · Azure')).toBeInTheDocument()
     expect(screen.getByText('East West Banking Corporation · from December 2026')).toBeInTheDocument()
     expect(screen.getByText(experience[0].description!)).toBeInTheDocument()
+  })
+
+  test('16px focus line uses the light ember (AA on dark glass); the 24px "Next," keeps the ember', () => {
+    render(<Experience />)
+    expect(screen.getByText('Backend & site reliability · Azure').className).toContain('text-[var(--ember-text)]')
+    expect(screen.getByText('Next,').className).toContain('text-[var(--ember)]')
+    const css = readFileSync(resolve(import.meta.dirname, '../index.css'), 'utf8')
+    expect(css).toMatch(/--ember-text: #FFC496;/)
   })
 
   test('says "Now," once the start month has passed', () => {

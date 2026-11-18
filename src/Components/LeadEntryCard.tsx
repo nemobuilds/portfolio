@@ -7,7 +7,7 @@ export function LeadEntryCard({ entry, label }: { entry: LogEntry; label: 'Next,
         <span className="font-serif text-[24px] font-normal italic text-[var(--ember)]">{label}</span>{' '}
         {entry.role}
       </h3>
-      {entry.focus && <p className="m-0 text-base font-semibold text-[var(--ember)]">{entry.focus}</p>}
+      {entry.focus && <p className="m-0 text-base font-semibold text-[var(--ember-text)]">{entry.focus}</p>}
       <p className="m-0 text-sm font-medium text-[#D2DBF8]">
         {entry.org} · {entry.period}
       </p>
