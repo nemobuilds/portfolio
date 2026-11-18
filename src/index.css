@@ -233,3 +233,75 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .app-tile { transition: none; }
 }
+
+/* Depth gauge: fixed at the middle of the right edge, hidden on phones */
+.depth-gauge {
+  position: fixed;
+  z-index: 4;
+  top: 50%;
+  right: max(14px, env(safe-area-inset-right, 0px));
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: #22345F;
+  transition: color 0.4s ease;
+}
+.depth-gauge--deep { color: #C8D2F5; }
+.depth-gauge::before,
+.depth-gauge__fill {
+  content: "";
+  position: absolute;
+  right: 7px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  border-radius: 1px;
+}
+.depth-gauge::before { background: currentColor; opacity: 0.25; }
+.depth-gauge__fill { background: var(--accent); transform-origin: top; }
+.depth-gauge a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 44px;
+  margin-block: -10px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+}
+.depth-gauge__m { font-variant-numeric: tabular-nums; opacity: 0.8; }
+.depth-gauge__name {
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+.depth-gauge i { width: 16px; height: 16px; display: grid; place-items: center; }
+.depth-gauge i::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  box-sizing: border-box;
+}
+.depth-gauge a[aria-current] .depth-gauge__name,
+.depth-gauge a:hover .depth-gauge__name,
+.depth-gauge a:focus-visible .depth-gauge__name { opacity: 1; transform: none; }
+.depth-gauge a[aria-current] .depth-gauge__m { opacity: 1; }
+.depth-gauge a[aria-current] i::after {
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-color: #17161C;
+}
+@media (max-width: 759px) { .depth-gauge { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .depth-gauge, .depth-gauge__name { transition: none; }
+}
