@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { expect, test } from 'vitest'
 
-const css = readFileSync('src/index.css', 'utf8')
+const css = readFileSync(resolve(import.meta.dirname, '../index.css'), 'utf8')
 
 function block(selector: string): string {
   const start = css.indexOf(`${selector} {`)
@@ -9,12 +10,22 @@ function block(selector: string): string {
   return css.slice(start, css.indexOf('}', start))
 }
 
-test('home pins its own text and focus tokens with higher specificity than data-theme', () => {
+function props(body: string): string[] {
+  return [...body.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1])
+}
+
+test('home pins every token the dark block sets, so no theme token leaks', () => {
+  const dark = props(block('[data-theme="dark"]'))
+  const home = props(block(':root[data-surface="home"]'))
+  expect(dark.length).toBeGreaterThan(0)
+  expect(home).toEqual(expect.arrayContaining(dark))
+})
+
+test('home pins ink text and cream halo', () => {
   const home = block(':root[data-surface="home"]')
   expect(home).toContain('--text: #17161C')
   expect(home).toContain('--focus-halo: #F4EEE3')
-  // :root[attr] is (0,2,0); bare [data-theme="dark"] is (0,1,0)
-  expect(css).toContain('[data-theme="dark"] {')
+  expect(home).toContain('--card-fill: linear-gradient(#EBEFF5, #DDE3EC)')
 })
 
 test('home body paints the water surface', () => {

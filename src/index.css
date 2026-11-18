@@ -55,9 +55,15 @@
 /* Home never follows data-theme: water gradient, ink text, cream halo.
    :root[...] outranks the plain [data-theme="dark"] block whatever the order. */
 :root[data-surface="home"] {
+  --page-top: #E9F0F9;
+  --page-bottom: #C9D8F0;
+  --card-fill: linear-gradient(#EBEFF5, #DDE3EC);
+  --card-edge: #7C869C;
   --text: #17161C;
   --text-secondary: #3A4058;
+  --accent: #F06A16;
   --date: #9A3A0E;
+  --scan: #FFFFFF;
   --focus-ring: #17161C;
   --focus-halo: #F4EEE3;
 }
