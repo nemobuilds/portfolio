@@ -30,6 +30,7 @@
   --card-fill: linear-gradient(#EBEFF5, #DDE3EC);
   --card-edge: #7C869C;
   --text: #17161C;
+  --text-inverse: #F4F5F8;
   --text-secondary: #3A4058;
   --accent: #F06A16;
   --date: #9A3A0E;
@@ -49,6 +50,7 @@
   --card-fill: linear-gradient(#2D313A, #20232A);
   --card-edge: rgb(200 212 250 / 0.36);
   --text: #EFECE3;
+  --text-inverse: #17161C;
   --text-secondary: #C3C7D2;
   --accent: #F06A16;
   --date: #FF9A52;
@@ -70,6 +72,7 @@
   --card-fill: linear-gradient(#EBEFF5, #DDE3EC);
   --card-edge: #7C869C;
   --text: #17161C;
+  --text-inverse: #F4F5F8;
   --text-secondary: #3A4058;
   --accent: #F06A16;
   --date: #9A3A0E;

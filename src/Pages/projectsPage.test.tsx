@@ -74,6 +74,7 @@ describe('ProjectsPage', () => {
     const live = within(card).getByRole('link', { name: /Live demo/ })
     expect(live).toHaveAttribute('href', 'https://ambition-beta.vercel.app/')
     expect(live).toHaveAttribute('target', '_blank')
+    expect(live.className).toContain('text-[var(--text)]')
     expect(live).toHaveAttribute('rel', 'noreferrer')
     expect(within(card).queryByRole('link', { name: /GitHub/ })).toBeNull()
   })
@@ -117,6 +118,16 @@ describe('FilterButtons', () => {
     render(<FilterButtons options={options} selected="A" onSelect={() => {}} />)
     expect(screen.getByRole('radio', { name: /^A1$/ })).toHaveAttribute('tabindex', '0')
     expect(screen.getByRole('radio', { name: /^B2$/ })).toHaveAttribute('tabindex', '-1')
+  })
+})
+
+describe('FilterButtons theme', () => {
+  test('selected filter uses the inverse text token, defined for dark', () => {
+    document.documentElement.dataset.theme = 'dark'
+    render(<FilterButtons options={[{ label: 'All', count: 1 }]} selected="All" onSelect={() => {}} />)
+    const cls = screen.getByRole('radio').className
+    expect(cls).toContain('text-[var(--text-inverse)]')
+    expect(cls).not.toContain('--bg')
   })
 })
 

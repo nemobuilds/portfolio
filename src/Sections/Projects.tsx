@@ -1,4 +1,4 @@
-import { featuredProjects } from '../data/portfolioData'
+import { homeProjects } from '../content/projects'
 import SectionHeader from '../Components/SectionHeader'
 import ProjectCard from '../Components/ProjectCard'
 import ExternalLink from '../Components/ExternalLink'
@@ -20,8 +20,8 @@ export default function Projects() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 pt-3 border-t border-border">
-        {featuredProjects.map((project) => (
-          <ProjectCard key={project.name} project={project} />
+        {homeProjects.map((project) => (
+          <ProjectCard key={project.slug} project={project} />
         ))}
       </div>
     </section>

@@ -5,7 +5,7 @@ type Option = { label: string; count: number }
 const base =
   'inline-flex shrink-0 items-center gap-2 min-h-11 px-3.5 rounded-[7px] border text-[14px] font-semibold cursor-pointer box-border transition-[background-color,color,border-color] duration-250 ease-in-out motion-reduce:transition-none'
 const off = 'surface-slate hover:border-[var(--text)]'
-const on = 'bg-[var(--text)] text-[var(--bg,#F4F5F8)] border-[var(--text)]'
+const on = 'bg-[var(--text)] text-[var(--text-inverse)] border-[var(--text)]'
 
 export function FilterButtons({
   options,

@@ -33,7 +33,7 @@ export default function ProjectCard({ project }: { project: Project }) {
             </a>
           )}
           {project.liveUrl && (
-            <a href={project.liveUrl} target="_blank" rel="noreferrer" className={`${linkBase} text-[var(--accent)] underline`}>
+            <a href={project.liveUrl} target="_blank" rel="noreferrer" className={`${linkBase} text-[var(--text)] underline`}>
               <span>Live demo</span>
               <Icon name="external" size={16} />
             </a>
