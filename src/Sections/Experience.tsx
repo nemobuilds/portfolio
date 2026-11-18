@@ -25,7 +25,7 @@ export default function Experience() {
         {lead && <LeadEntryCard entry={lead} label={label} />}
         <ul
           aria-label="Earlier roles"
-          className="m-0 list-none rounded-[10px] px-5 py-1 max-[899px]:bg-[var(--glass-dark)] max-[899px]:shadow-[inset_0_0_0_1px_rgba(200,212,250,0.36)] min-[900px]:p-0"
+          className="m-0 list-none rounded-[10px] px-5 py-1 bg-[var(--glass-dark)] shadow-[inset_0_0_0_1px_rgba(200,212,250,0.36)]"
         >
           {rows.map((e) => (
             <LogRow key={`${e.period}-${e.role}`} entry={e} />

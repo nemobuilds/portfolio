@@ -20,12 +20,14 @@ describe('Experience', () => {
     expect(screen.getByText(experience[0].description!)).toBeInTheDocument()
   })
 
-  test('16px focus line uses the light ember (AA on dark glass); the 24px "Next," keeps the ember', () => {
+  test('"Next," is the accent orange (large text) and the focus line is bold ember (AA on dark glass)', () => {
     render(<Experience />)
-    expect(screen.getByText('Backend & site reliability · Azure').className).toContain('text-[var(--ember-text)]')
-    expect(screen.getByText('Next,').className).toContain('text-[var(--ember)]')
+    expect(screen.getByText('Next,').className).toContain('text-[var(--accent)]')
+    const focus = screen.getByText('Backend & site reliability · Azure')
+    expect(focus.className).toContain('text-[var(--ember)]')
+    expect(focus.className).toContain('font-bold')
     const css = readFileSync(resolve(import.meta.dirname, '../index.css'), 'utf8')
-    expect(css).toMatch(/--ember-text: #FFC496;/)
+    expect(css).toMatch(/--ember: #FF9A52;/)
   })
 
   test('says "Now," once the start month has passed', () => {
@@ -56,9 +58,12 @@ describe('Experience', () => {
     }
   })
 
-  test('earlier roles sit on dark glass under 900px', () => {
+  test('earlier roles sit on dark glass at every width, with ember dates', () => {
     render(<Experience />)
-    expect(screen.getByRole('list', { name: 'Earlier roles' }).className).toContain('max-[899px]:bg-[var(--glass-dark)]')
+    const list = screen.getByRole('list', { name: 'Earlier roles' })
+    expect(list.className).toContain('bg-[var(--glass-dark)]')
+    expect(list.className).not.toContain('max-[899px]:')
+    expect(within(list).getByText(experience[1].period).className).toContain('text-[var(--ember)]')
   })
 
   test('two separate headings, no combined heading', () => {

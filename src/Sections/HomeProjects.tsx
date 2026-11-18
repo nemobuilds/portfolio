@@ -16,7 +16,7 @@ export default function HomeProjects() {
         <h2 id="projects-heading" className="m-0 text-[32px] font-bold min-[760px]:text-[44px]" style={{ letterSpacing: '-0.035em' }}>
           Projects
         </h2>
-        <Button variant="text" to="/projects" trailingIcon="arrow" label="All projects" />
+        <Button variant="secondary" to="/projects" trailingIcon="arrow" label="All projects" />
       </div>
       <div className="grid gap-4 min-[900px]:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] min-[900px]:items-start">
         <div

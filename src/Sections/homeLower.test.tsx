@@ -67,6 +67,23 @@ describe('DepthGauge', () => {
     render(<DepthGauge stops={gaugeStops} />)
     expect(document.querySelectorAll('[aria-current="location"]')).toHaveLength(1)
   })
+
+  test('stops above the current one are marked past (filled dots)', () => {
+    const tops: Record<string, number> = { top: 0, projects: 600, experience: 1800, certificates: 2400, contact: 2800 }
+    const els = Object.entries(tops).map(([id, t]) => {
+      const el = document.createElement('section')
+      el.id = id
+      el.getBoundingClientRect = () => ({ top: t, bottom: t + 100, left: 0, right: 0, width: 0, height: 100, x: 0, y: t, toJSON() {} })
+      document.body.appendChild(el)
+      return el
+    })
+    Object.defineProperty(window, 'innerHeight', { value: 0, configurable: true })
+    render(<DepthGauge stops={gaugeStops} />)
+    const links = within(screen.getByRole('navigation', { name: 'Depth' })).getAllByRole('link')
+    const current = links.findIndex((l) => l.getAttribute('aria-current') === 'location')
+    links.forEach((l, i) => expect(l.hasAttribute('data-past')).toBe(i < current))
+    els.forEach((e) => e.remove())
+  })
 })
 
 describe('Contact', () => {
@@ -100,5 +117,14 @@ describe('HomeCertifications', () => {
       expect(link).toHaveTextContent(homeCertificates[i].name)
       expect(link).toHaveAttribute('href', `/certificates/${homeCertificates[i].id}`)
     })
+  })
+
+  test('home cards are dark glass with a scan panel, "issuer · via", and no placeholder text', () => {
+    render(<MemoryRouter><HomeCertifications /></MemoryRouter>)
+    const cards = screen.getAllByRole('article')
+    cards.forEach((c) => expect(c.className).toContain('surface-glass--deep'))
+    expect(within(cards[0]).getByText('Cisco · Certiport')).toBeInTheDocument()
+    expect(within(cards[0]).getByText('April 2025').className).toContain('text-[var(--ember)]')
+    expect(screen.queryByText(/Screenshot here|\[Month YYYY\]/)).toBeNull()
   })
 })

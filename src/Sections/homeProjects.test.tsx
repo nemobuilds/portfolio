@@ -17,7 +17,9 @@ describe('HomeProjects', () => {
     expect(rows[0]).toHaveAttribute('aria-pressed', 'true')
     expect(rows[1]).toHaveAttribute('aria-pressed', 'false')
     expect(within(stage()).getByRole('heading', { name: homeProjects[0].name })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /All projects/ })).toHaveAttribute('href', '/projects')
+    const all = screen.getByRole('link', { name: /All projects/ })
+    expect(all).toHaveAttribute('href', '/projects')
+    expect(all.className).toContain('border-[color-mix(') // outlined, like "All certifications"
   })
 
   test('Enter on the AMBITION row selects it and shows its stage', async () => {

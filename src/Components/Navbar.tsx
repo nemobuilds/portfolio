@@ -73,6 +73,7 @@ export function Navbar({ surface, current, backLink, hideThemeToggle }: Props) {
               {/* the name starts with the visible text (WCAG 2.5.3): "nemo, John Rogee Turqueza, home" */}
               <span className="sr-only">, {site.name}, home</span>
             </Link>
+            <span aria-hidden="true" className="mx-1 hidden h-6 w-px bg-current opacity-25 min-[760px]:block" />
 
             <nav aria-label="Main" className="hidden items-center gap-1 min-[760px]:flex">
               {links.map((l) => {
@@ -88,7 +89,7 @@ export function Navbar({ surface, current, backLink, hideThemeToggle }: Props) {
                   </Link>
                 )
               })}
-              <Button variant="primary" href={site.resumePath} download label="Résumé" />
+              <Button variant="primary" href={site.resumePath} download label="Résumé" className="!rounded-[18px] ml-1" />
             </nav>
 
             {!isHome && !hideThemeToggle && <ThemeToggle />}

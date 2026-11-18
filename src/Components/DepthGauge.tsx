@@ -93,7 +93,7 @@ export default function DepthGauge({ stops }: { stops: GaugeStop[] }) {
     <nav aria-label="Depth" className={`depth-gauge ${deep ? 'depth-gauge--deep' : ''}`}>
       <span aria-hidden="true" className="depth-gauge__fill" style={{ transform: `scaleY(${fill})` }} />
       {stops.map((s, i) => (
-        <a key={s.target} href={s.target} aria-current={i === current ? 'location' : undefined}>
+        <a key={s.target} href={s.target} aria-current={i === current ? 'location' : undefined} data-past={i < current ? '' : undefined}>
           <span className="depth-gauge__name">{s.label}</span>
           <span className="depth-gauge__m">{s.depth}</span>
           <i aria-hidden="true" />

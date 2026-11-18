@@ -63,6 +63,13 @@ describe('Navbar', () => {
     expect(within(nav).getByRole('link', { name: 'Résumé' })).toHaveAttribute('download')
   })
 
+  test('résumé is a rounded rectangle matching the pill, with a separator after the brand', () => {
+    const { container } = wrap(<Navbar surface="home" />)
+    const nav = screen.getByRole('navigation', { name: 'Main' })
+    expect(within(nav).getByRole('link', { name: 'Résumé' }).className).toContain('!rounded-[18px]')
+    expect(container.querySelector('span[aria-hidden="true"].w-px')).not.toBeNull()
+  })
+
   test('back link shows only when asked and points to /projects', () => {
     const { unmount } = wrap(<Navbar surface="sub" />)
     expect(screen.queryByRole('link', { name: /All projects/ })).toBeNull()

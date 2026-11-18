@@ -18,7 +18,6 @@
   --glass-edge: rgb(60 82 140 / 0.75);
   --serif-accent: #22345F;
   --ember: #FF9A52;
-  --ember-text: #FFC496; /* body-size ember text on dark glass (AA); --ember is for large text */
   --ink: #17161C;
   --cream: #F4EEE3;
 }
@@ -319,6 +318,10 @@ body {
 .depth-gauge a[aria-current] .depth-gauge__name,
 .depth-gauge a:hover .depth-gauge__name,
 .depth-gauge a:focus-visible .depth-gauge__name { opacity: 1; transform: none; }
+.depth-gauge a[data-past] i::after {
+  background: var(--accent);
+  border-color: var(--accent);
+}
 .depth-gauge a[aria-current] i::after {
   width: 12px;
   height: 12px;

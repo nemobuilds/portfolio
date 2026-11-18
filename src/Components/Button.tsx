@@ -15,6 +15,8 @@ type Props = {
   disabled?: boolean
   label: string
   children?: ReactNode
+  /** Extra classes, e.g. a radius that matches its container. */
+  className?: string
 }
 
 const base =
@@ -36,7 +38,7 @@ function palette(variant: Props['variant'], surface: Props['surface']): string {
 }
 
 export function Button({
-  variant, surface, href, to, onClick, external, download, leadingIcon, trailingIcon, disabled, label, children,
+  variant, surface, href, to, onClick, external, download, leadingIcon, trailingIcon, disabled, label, children, className,
 }: Props) {
   const isIcon = variant === 'icon'
   const trailing: IconName | undefined = external ? 'external' : download ? 'download' : trailingIcon
@@ -45,6 +47,7 @@ export function Button({
     palette(variant, surface),
     isIcon ? 'w-11 p-0' : variant === 'text' ? 'px-2' : 'px-4',
     disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : '',
+    className ?? '',
   ].join(' ')
 
   const content = isIcon ? (
