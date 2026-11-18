@@ -76,6 +76,16 @@ describe('Navbar', () => {
     expect(menu).toHaveFocus()
   })
 
+  test('back link is not rendered while the phone menu is open', async () => {
+    const user = userEvent.setup()
+    wrap(<Navbar surface="sub" backLink />)
+    expect(screen.getByRole('link', { name: /All projects/ })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Open menu' }))
+    expect(screen.queryByRole('link', { name: /All projects/ })).toBeNull()
+    await user.keyboard('{Escape}')
+    expect(screen.getByRole('link', { name: /All projects/ })).toBeInTheDocument()
+  })
+
   test('phone menu traps Tab', async () => {
     const user = userEvent.setup()
     wrap(<Navbar surface="home" />)
@@ -162,6 +172,17 @@ describe('Layout', () => {
 })
 
 describe('forced theme', () => {
+  test('forced layout has no toggle and is dark on the first render', () => {
+    localStorage.setItem('theme', 'light')
+    wrap(
+      <Layout surface="sub" forceTheme="dark">
+        <h1>x</h1>
+      </Layout>,
+    )
+    expect(screen.queryByRole('button', { name: /Switch to/ })).toBeNull()
+    expect(document.documentElement.dataset.theme).toBe('dark')
+  })
+
   test('forceTheme layout renders no theme toggle', async () => {
     wrap(
       <Layout surface="sub" forceTheme="dark">

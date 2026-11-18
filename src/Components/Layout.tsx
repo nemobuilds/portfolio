@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, type ReactNode } from 'react'
+import { useLayoutEffect, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useHashScroll } from '../hooks/useHashScroll'
 import { useTheme } from '../theme/ThemeProvider'
@@ -31,7 +31,7 @@ export function Layout({ surface, current, backLink, forceTheme, children }: Pro
     document.documentElement.dataset.surface = surface
   }, [surface])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!forceTheme) return
     setForcedTheme(forceTheme)
     return () => setForcedTheme(null)
@@ -55,7 +55,7 @@ export function Layout({ surface, current, backLink, forceTheme, children }: Pro
   return (
     <div className="flex min-h-screen flex-col">
       <SkipLink />
-      <Navbar surface={surface} current={current} backLink={backLink} />
+      <Navbar surface={surface} current={current} backLink={backLink} hideThemeToggle={!!forceTheme} />
       <main id="main-content" className={`flex-1 ${surface === 'sub' ? 'pt-24' : ''} pb-14 min-[760px]:pb-0`}>
         {children}
       </main>
