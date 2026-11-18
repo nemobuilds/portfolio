@@ -337,3 +337,10 @@ body {
 ::view-transition-new(theme-band) {
   animation: none;
 }
+
+/* Boot screen name font (Task 18). Only the boot canvas uses it. */
+@font-face {
+  font-family: "Talina";
+  src: url("./assets/fonts/talina.otf") format("opentype");
+  font-display: block;
+}
