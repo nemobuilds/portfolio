@@ -14,7 +14,7 @@ function homeZones(): Zone[] {
   const hero = document.getElementById('top')
   const contact = document.getElementById('contact')
   if (hero) zones.push({ top: -1e5, bottom: hero.getBoundingClientRect().bottom - GRID_FADE * 0.5 })
-  if (contact) zones.push({ top: contact.getBoundingClientRect().top + 40, bottom: 1e5 })
+  if (contact) zones.push({ top: contact.getBoundingClientRect().top + 120, bottom: 1e5 })
   return zones
 }
 

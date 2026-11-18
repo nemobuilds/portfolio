@@ -10,7 +10,7 @@ const socials: { label: string; href: string; icon: IconName }[] = [
 
 export default function Contact() {
   return (
-    <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center gap-6 px-4 pb-10 pt-20 text-center text-[var(--cream)] min-[760px]:px-8 min-[760px]:pt-[120px]">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center gap-6 px-4 pb-6 pt-10 text-center text-[var(--cream)] min-[760px]:px-8 min-[760px]:pt-16">
       <h2 id="contact-heading" className="m-0 font-bold leading-none" style={{ fontSize: 'clamp(44px, 6.6vw, 88px)', letterSpacing: '-0.04em' }}>
         Say <span className="accent-word !text-[#C8D2F5]">hello.</span>
       </h2>

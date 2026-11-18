@@ -30,7 +30,7 @@ export default function HomePage() {
         <HomeCertifications />
       </section>
       {/* the bottom padding is the sea floor: seabed and anglerfish sit between the socials and the footer */}
-      <section id="contact" data-depth="deep" aria-labelledby="contact-heading" className="pb-[250px] min-[760px]:pb-[270px]">
+      <section id="contact" data-depth="deep" aria-labelledby="contact-heading" className="pb-[190px] min-[760px]:pb-[200px]">
         <Contact />
       </section>
       <DepthGauge stops={gaugeStops} />
