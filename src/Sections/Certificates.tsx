@@ -1,4 +1,4 @@
-import { featuredCertificates } from '../data/portfolioData'
+import { homeCertificates } from '../content/certifications'
 import SectionHeader from '../Components/SectionHeader'
 import CertificateCard from '../Components/CertificateCard'
 import ExternalLink from '../Components/ExternalLink'
@@ -20,8 +20,8 @@ export default function Certificates() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 pt-3 border-t border-border">
-        {featuredCertificates.map((cert) => (
-          <CertificateCard key={cert.url} certificate={cert} />
+        {homeCertificates.map((cert) => (
+          <CertificateCard key={cert.id} certificate={cert} variant="home" />
         ))}
       </div>
     </section>
