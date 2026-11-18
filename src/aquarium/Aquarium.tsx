@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { useBooting } from '../boot/BootContext'
 import { useScrollDepth } from '../hooks/useScrollDepth'
-import { createAquarium, type AquariumEngine, type AquariumMode, type Zone } from './renderer'
+import type { AquariumEngine, AquariumMode, Zone } from './renderer'
 
 // Text that sits straight on the water: hero copy, section headings, contact text, footer.
 const CALM = '#top h1, #top > div > p, main h2, #contact > div > *, body footer'
@@ -22,45 +23,79 @@ function footerTop(): number {
   return footer ? footer.getBoundingClientRect().top : 1e6
 }
 
-/** The live tank: a fixed full-screen canvas above the water and below the content. */
+type Cancel = () => void
+
+/** Runs `fn` when the main thread is idle (or soon, where requestIdleCallback is missing). */
+function whenIdle(fn: () => void): Cancel {
+  if (typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(fn, { timeout: 1500 })
+    return () => window.cancelIdleCallback(id)
+  }
+  const id = setTimeout(fn, 0)
+  return () => clearTimeout(id)
+}
+
+/**
+ * The live tank: a fixed full-screen canvas above the water and below the content.
+ * The renderer is a separate chunk. It loads and starts after the boot overlay is
+ * gone and the main thread is idle, so it never competes with the first paint.
+ */
 export function Aquarium({ mode }: { mode: AquariumMode }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const engineRef = useRef<AquariumEngine | null>(null)
   const depth = useScrollDepth()
+  const depthRef = useRef(depth)
+  const booting = useBooting()
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const home = mode === 'home'
-    const engine = createAquarium(canvas, {
-      mode,
-      reducedMotion,
-      calmRects: () => (home ? rects(CALM) : []),
-      gridZones: () => (home ? homeZones() : []),
-      // 404: the floor sits on the footer, never below the viewport bottom
-      floorY: home ? footerTop : () => Math.min(footerTop(), window.innerHeight),
-    })
-    engineRef.current = engine
-    const root = document.documentElement
-    root.dataset.aquarium = mode
+    if (!canvas || booting) return
+    let cleanup: Cancel | undefined
+    let cancelled = false
 
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') engine.stop()
-      else engine.start()
+    const start = async () => {
+      const { createAquarium } = await import('./renderer')
+      if (cancelled) return
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const home = mode === 'home'
+      const engine = createAquarium(canvas, {
+        mode,
+        reducedMotion,
+        calmRects: () => (home ? rects(CALM) : []),
+        gridZones: () => (home ? homeZones() : []),
+        // 404: the floor sits on the footer, never below the viewport bottom
+        floorY: home ? footerTop : () => Math.min(footerTop(), window.innerHeight),
+      })
+      engine.setDepth(depthRef.current)
+      engineRef.current = engine
+      const root = document.documentElement
+      root.dataset.aquarium = mode
+
+      const onVisibility = () => {
+        if (document.visibilityState === 'hidden') engine.stop()
+        else engine.start()
+      }
+      document.addEventListener('visibilitychange', onVisibility)
+      if (document.visibilityState !== 'hidden') engine.start()
+
+      cleanup = () => {
+        document.removeEventListener('visibilitychange', onVisibility)
+        engine.destroy()
+        engineRef.current = null
+        delete root.dataset.aquarium
+      }
     }
-    document.addEventListener('visibilitychange', onVisibility)
-    if (document.visibilityState !== 'hidden') engine.start()
+    const cancelIdle = whenIdle(() => void start())
 
     return () => {
-      document.removeEventListener('visibilitychange', onVisibility)
-      engine.destroy()
-      engineRef.current = null
-      delete root.dataset.aquarium
+      cancelled = true
+      cancelIdle()
+      cleanup?.()
     }
-  }, [mode])
+  }, [mode, booting])
 
   useEffect(() => {
+    depthRef.current = depth
     engineRef.current?.setDepth(depth)
   }, [depth])
 

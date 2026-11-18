@@ -75,13 +75,15 @@ describe('BootScreen', () => {
   })
 
   test('the app is inert while booting and focus stays at the document start after', async () => {
+    document.documentElement.dataset.boot = ''
     render(
       <MemoryRouter initialEntries={['/nowhere']}>
         <App />
       </MemoryRouter>,
     )
-    const heading = screen.getByRole('heading', { level: 1, name: 'Page not found' })
+    const heading = await screen.findByRole('heading', { level: 1, name: 'Page not found' })
     expect(heading.closest('[inert]')).not.toBeNull()
+    expect(document.documentElement.dataset.boot).toBe('')
     expect(screen.getByRole('status', { name: LABEL })).toBeInTheDocument()
 
     await waitFor(() => expect(renderer.play).toHaveBeenCalled())
@@ -89,6 +91,7 @@ describe('BootScreen', () => {
 
     expect(screen.queryByRole('status', { name: LABEL })).not.toBeInTheDocument()
     expect(heading.closest('[inert]')).toBeNull()
+    expect(document.documentElement.dataset.boot).toBeUndefined()
     expect(document.activeElement).toBe(document.body)
     await userEvent.tab()
     expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveFocus()
@@ -123,14 +126,16 @@ describe('BootScreen', () => {
     expect(onClick).toHaveBeenCalledTimes(1)
   })
 
-  test('no boot when it was already seen this session', () => {
+  test('no boot when it was already seen this session', async () => {
     sessionStorage.setItem('boot-seen', '1')
+    document.documentElement.dataset.boot = ''
     render(
       <MemoryRouter initialEntries={['/nowhere']}>
         <App />
       </MemoryRouter>,
     )
     expect(screen.queryByRole('status', { name: LABEL })).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1, name: 'Page not found' }).closest('[inert]')).toBeNull()
+    expect((await screen.findByRole('heading', { level: 1, name: 'Page not found' })).closest('[inert]')).toBeNull()
+    expect(document.documentElement.dataset.boot).toBeUndefined()
   })
 })

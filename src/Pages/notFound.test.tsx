@@ -9,13 +9,13 @@ import NotFoundPage from './NotFoundPage'
 const theme = () => document.documentElement.dataset.theme
 
 describe('NotFoundPage', () => {
-  test('* route renders Page not found with both actions', () => {
+  test('* route renders Page not found with both actions', async () => {
     render(
       <MemoryRouter initialEntries={['/nowhere']}>
         <App />
       </MemoryRouter>,
     )
-    expect(screen.getByRole('heading', { level: 1, name: 'Page not found' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Page not found' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Back to the surface' })).toHaveAttribute('href', '/')
     expect(screen.getByRole('link', { name: /See the projects/ })).toHaveAttribute('href', '/projects')
     expect(document.title).toBe('Page not found · John Rogee Turqueza')
