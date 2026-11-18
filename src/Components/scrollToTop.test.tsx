@@ -1,13 +1,18 @@
 import { act, render } from '@testing-library/react'
+import { useEffect } from 'react'
 import { MemoryRouter, useNavigate, type NavigateFunction } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { ScrollToTop } from './ScrollToTop'
 
-let navigate: NavigateFunction
+const nav: { current?: NavigateFunction } = {}
 function Grab() {
-  navigate = useNavigate()
+  const navigate = useNavigate()
+  useEffect(() => {
+    nav.current = navigate
+  }, [navigate])
   return null
 }
+const navigate: NavigateFunction = ((to: never, opts?: never) => nav.current!(to, opts)) as NavigateFunction
 
 function start(path: string) {
   render(
