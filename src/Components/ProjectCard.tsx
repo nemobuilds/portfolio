@@ -1,61 +1,51 @@
-import type { Project } from '../data/portfolioData'
-import ExternalLink from './ExternalLink'
+import { Link } from 'react-router-dom'
+import type { Project } from '../content/projects'
+import { Icon } from './Icon'
+import { SmartImage } from './SmartImage'
+import { StackList } from './StackList'
 
-interface ProjectCardProps {
-  project: Project
-}
+const linkBase =
+  'relative z-10 inline-flex items-center gap-1.5 min-h-11 text-[14px] font-semibold no-underline hover:underline underline-offset-[3px]'
 
-function WindowDots() {
+export default function ProjectCard({ project }: { project: Project }) {
+  const to = `/projects/${project.slug}`
   return (
-    <div className="flex gap-1.5" aria-hidden="true">
-      <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-      <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-      <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
-    </div>
-  )
-}
-
-export default function ProjectCard({ project }: ProjectCardProps) {
-  const isComingSoon = project.url === '#'
-  const stackLabel = project.stack.join(' • ')
-
-  return (
-    <article className="section-shell flex flex-col gap-3 p-4 h-full text-left transition-colors hover:border-accent/40">
-      {project.featured ? (
-        <span className="font-mono text-xxs text-accent-orange tracking-wide">★ FEATURED</span>
-      ) : (
-        <WindowDots />
-      )}
-
-      <div className="flex items-center gap-2 min-w-0">
-        <img className="h-5 w-5 shrink-0" src="/programming-folder.svg" alt="" aria-hidden="true" />
-        <h3 className="font-mono text-sm font-semibold text-terminal truncate m-0">{project.name}</h3>
-      </div>
-
-      <p className="font-mono text-xs text-text-muted m-0">{stackLabel}</p>
-
-      <p className="font-mono text-xs text-text-secondary leading-relaxed line-clamp-3 m-0 flex-1">
-        {project.desc}
-      </p>
-
-      {!isComingSoon && (
-        <div className="flex flex-wrap gap-4 mt-auto pt-1">
-          {project.demoUrl && (
-            <ExternalLink
-              href={project.demoUrl}
-              className="font-mono text-xs text-accent no-underline hover:underline"
-            >
-              &gt; Live Demo
-            </ExternalLink>
+    <article className="surface-slate relative flex flex-col overflow-hidden rounded-[10px] shadow-[0_26px_36px_-18px_rgba(8,14,50,0.45)]">
+      <SmartImage src={project.thumbnail} alt="" initial={project.name.charAt(0)} aspect="16/10" />
+      <div className="flex flex-1 flex-col gap-2.5 px-[22px] pt-5 pb-[22px]">
+        <h3 className="m-0 text-[22px] font-bold tracking-[-0.02em] line-clamp-2">
+          <Link to={to} className="text-[var(--text)] no-underline after:absolute after:inset-0 after:content-['']">
+            {project.name}
+          </Link>
+        </h3>
+        <p className="m-0 text-[15px] leading-normal text-[var(--text-secondary)] line-clamp-3">{project.summary}</p>
+        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">{project.category}</span>
+        <StackList items={project.stack} limit={4} />
+        <div className="mt-auto flex flex-wrap items-center gap-x-[18px] gap-y-1 pt-2">
+          <Link to={to} className={`${linkBase} text-[var(--text)]`}>
+            <span>{project.caseStudy ? 'Case study' : 'Details'}</span>
+            <Icon name="arrow" size={16} />
+          </Link>
+          {project.repoUrl && (
+            <a href={project.repoUrl} target="_blank" rel="noreferrer" className={`${linkBase} text-[var(--text)] underline`}>
+              <span>GitHub</span>
+              <Icon name="external" size={16} />
+            </a>
           )}
-          <ExternalLink
-            href={project.url}
-            className="font-mono text-xs text-accent no-underline hover:underline"
-          >
-            &gt; Source Code
-          </ExternalLink>
+          {project.liveUrl && (
+            <a href={project.liveUrl} target="_blank" rel="noreferrer" className={`${linkBase} text-[var(--accent)] underline`}>
+              <span>Live demo</span>
+              <Icon name="external" size={16} />
+            </a>
+          )}
+          {project.isPrivate && (
+            <span className="inline-flex min-h-11 items-center gap-1.5 text-[14px] font-medium text-[var(--text-secondary)]">
+              <Icon name="lock" size={16} />
+              <span>Code is private</span>
+            </span>
+          )}
         </div>
-      )}
+      </div>
     </article>
   )
 }

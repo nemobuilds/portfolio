@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './theme/ThemeProvider'
-import { HomePage, ProjectsPage, CaseStudyPage, CertificatesPage, NotFoundPage } from './Pages/stubs'
+import { HomePage, CaseStudyPage, CertificatesPage, NotFoundPage } from './Pages/stubs'
+import ProjectsPage from './Pages/ProjectsPage'
 
 export default function App() {
   return (

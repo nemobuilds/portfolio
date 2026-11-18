@@ -9,14 +9,6 @@ export function HomePage() {
   )
 }
 
-export function ProjectsPage() {
-  return (
-    <Layout surface="sub" current="projects">
-      <h1>Projects</h1>
-    </Layout>
-  )
-}
-
 export function CaseStudyPage() {
   const { slug } = useParams()
   return (

@@ -1,79 +1,59 @@
-import { projects } from '../data/portfolioData'
-import ExternalLink from '../Components/ExternalLink'
-import Footer from '../Components/Footer'
+import { useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Layout } from '../Components/Layout'
+import { FilterButtons } from '../Components/FilterButtons'
+import ProjectCard from '../Components/ProjectCard'
+import { EmptyState } from '../Components/EmptyState'
+import { countWord } from '../content/count'
+import { projects } from '../content/projects'
 
-function ProjectListItem({
-  project,
-  index,
-}: {
-  project: (typeof projects)[number]
-  index: number
-}) {
-  const isComingSoon = project.url === '#'
+const ALL = 'All'
 
-  const content = (
-    <>
-      <div className="flex justify-between items-center mb-3">
-        <span className="font-mono text-xxs text-text-muted">
-          [ {isComingSoon ? '??' : String(index + 1).padStart(2, '0')} ]
-        </span>
-        {!isComingSoon && <span className="text-accent">↗</span>}
-      </div>
+export default function ProjectsPage() {
+  const [params] = useSearchParams()
+  const navigate = useNavigate()
 
-      <h2 className="font-mono text-base text-terminal m-0 mb-2">{project.name}</h2>
-      <p className="mb-3 font-mono text-xs text-text-secondary leading-relaxed m-0">{project.desc}</p>
+  useEffect(() => {
+    document.title = 'Projects · John Rogee Turqueza'
+  }, [])
 
-      <div className="flex flex-wrap gap-1.5">
-        {project.stack.map((tech) => (
-          <span
-            key={tech}
-            className="font-mono text-xxs text-accent bg-surface-elevated border border-border px-2 py-0.5 rounded-sm"
-          >
-            {tech}
-          </span>
-        ))}
-      </div>
-    </>
-  )
+  const categories: string[] = [...new Set(projects.map((p) => p.category))]
+  const options = [
+    { label: ALL, count: projects.length },
+    ...categories.map((c) => ({ label: c, count: projects.filter((p) => p.category === c).length })),
+  ]
+  const wanted = params.get('category')
+  const selected = wanted && categories.includes(wanted) ? wanted : ALL
+  const shown = selected === ALL ? projects : projects.filter((p) => p.category === selected)
 
-  if (isComingSoon) {
-    return (
-      <article className="section-shell flex flex-col justify-between p-4 text-left opacity-40">
-        {content}
-      </article>
-    )
+  const select = (label: string) => {
+    navigate({ search: label === ALL ? '' : `?category=${encodeURIComponent(label)}` }, { replace: true })
   }
 
   return (
-    <ExternalLink
-      href={project.url}
-      className="section-shell flex flex-col justify-between p-4 text-left no-underline transition-colors hover:border-accent/40"
-    >
-      {content}
-    </ExternalLink>
-  )
-}
-
-export default function ProjectsPage() {
-  return (
-    <main id="main-content" className="py-4 flex flex-col flex-1">
-      <header className="relative mb-6 flex items-center justify-center text-left">
-        <a href="/" className="absolute left-1 font-mono text-xs text-accent no-underline hover:underline">
-          ← back home
-        </a>
-        {/* <p className="font-mono text-sm text-terminal m-0 mb-2">&gt; all_projects</p> */}
-        <h1 className="font-heading text-center text-2xl m-0">Projects</h1>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-        {projects.map((p, index) => (
-          <ProjectListItem key={p.name} project={p} index={index} />
-        ))}
+    <Layout surface="sub" current="projects">
+      <div className="mx-auto w-full max-w-[1200px] px-6">
+        <section className="flex flex-col gap-[18px] pt-12 pb-9">
+          <h1 className="m-0 text-[clamp(48px,6vw,80px)] font-extrabold leading-[0.95] tracking-[-0.045em] text-[var(--text)]">
+            Projects
+          </h1>
+          <p className="m-0 text-[16px] text-[var(--text-secondary)] min-[760px]:text-[18px]">
+            {countWord(projects.length)} projects. Each one opens a case study.
+          </p>
+          <FilterButtons options={options} selected={selected} onSelect={select} />
+        </section>
+        <section className="pb-[88px]">
+          {shown.length === 0 ? (
+            <EmptyState message="No projects in this category yet." action={{ label: 'Show all projects', onClick: () => select(ALL) }} />
+          ) : (
+            <div className="grid grid-cols-1 gap-6 min-[760px]:grid-cols-2 min-[1100px]:grid-cols-3">
+              {shown.map((p) => (
+                <ProjectCard key={p.slug} project={p} />
+              ))}
+            </div>
+          )}
+        </section>
       </div>
-
-      <div className="mt-auto">
-        <Footer />
-      </div>
-    </main>
+    </Layout>
   )
 }
