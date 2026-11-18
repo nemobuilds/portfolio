@@ -1,17 +1,38 @@
-import { useTheme } from '../hooks/useTheme'
+import { useTheme } from '../theme/ThemeProvider'
+
+const iconProps = {
+  width: 20,
+  height: 20,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.8,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+  'aria-hidden': true,
+}
 
 export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
+  const target = theme === 'dark' ? 'light' : 'dark'
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-      title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-      className="font-mono text-xs px-2.5 py-1.5 border border-border rounded-sm text-text-secondary bg-surface hover:border-accent hover:text-accent transition-colors cursor-pointer"
+      aria-label={`Switch to ${target} theme`}
+      className="surface-glass inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-[var(--text)]"
     >
-      {theme === 'dark' ? '☀️' : '🌙'}
+      {target === 'light' ? (
+        <svg {...iconProps}>
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+        </svg>
+      ) : (
+        <svg {...iconProps}>
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+        </svg>
+      )}
     </button>
   )
 }

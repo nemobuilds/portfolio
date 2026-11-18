@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { ThemeProvider } from './hooks/useTheme'
+import { ThemeProvider } from './theme/ThemeProvider'
 import Nav from './Components/Nav'
 import Footer from './Components/Footer'
 import Hero from './Sections/Hero'
