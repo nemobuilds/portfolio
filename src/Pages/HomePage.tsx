@@ -1,4 +1,5 @@
 import { Layout } from '../Components/Layout'
+import Experience from '../Sections/Experience'
 import Hero from '../Sections/Hero'
 import HomeProjects from '../Sections/HomeProjects'
 import { Water } from '../Sections/Water'
@@ -12,7 +13,9 @@ export default function HomePage() {
       <section id="projects" aria-labelledby="projects-heading">
         <HomeProjects />
       </section>
-      <section id="experience" data-depth="deep" className="min-h-[40vh]" />
+      <section id="experience" data-depth="deep" aria-label="Experience and tech stack">
+        <Experience />
+      </section>
       <section id="certificates" data-depth="deep" className="min-h-[40vh]" />
       <section id="contact" data-depth="deep" className="min-h-[40vh]" />
     </Layout>
