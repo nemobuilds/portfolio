@@ -25,9 +25,11 @@ export default function ThemeToggle() {
     running.current = true
     const rect = e.currentTarget.getBoundingClientRect()
     const origin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
-    animateThemeSwitch(origin, () => flushSync(toggleTheme)).finally(() => {
+    const release = () => {
       running.current = false
-    })
+    }
+    // a failed switch must not leave the toggle locked or raise an unhandled rejection
+    animateThemeSwitch(origin, () => flushSync(toggleTheme)).then(release, release)
   }
 
   return (

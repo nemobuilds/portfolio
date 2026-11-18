@@ -93,10 +93,20 @@ export async function animateThemeSwitch(origin: Point, apply: () => void): Prom
   // Its own view-transition name keeps the canvas above the clipped root snapshot.
   document.body.appendChild(canvas)
   let toDark = false
-  const transition = doc.startViewTransition(() => {
-    apply()
-    toDark = document.documentElement.dataset.theme === 'dark'
-  })
+  let applied = false
+  let transition: { ready: Promise<void>; finished: Promise<void> }
+  try {
+    transition = doc.startViewTransition(() => {
+      applied = true
+      apply()
+      toDark = document.documentElement.dataset.theme === 'dark'
+    })
+  } catch {
+    // e.g. InvalidStateError: switch without the animation
+    canvas.remove()
+    if (!applied) apply()
+    return
+  }
   try {
     await transition.ready
   } catch {

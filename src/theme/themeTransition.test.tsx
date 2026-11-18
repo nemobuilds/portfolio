@@ -39,6 +39,20 @@ describe('animateThemeSwitch', () => {
   })
 })
 
+describe('animateThemeSwitch when startViewTransition throws', () => {
+  test('applies the theme once and leaves no canvas behind', async () => {
+    setReduce(false)
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null)
+    doc.startViewTransition = () => {
+      throw new Error('InvalidStateError')
+    }
+    const apply = vi.fn()
+    await expect(animateThemeSwitch({ x: 1, y: 1 }, apply)).resolves.toBeUndefined()
+    expect(apply).toHaveBeenCalledTimes(1)
+    expect(document.querySelector('body > canvas')).toBeNull()
+  })
+})
+
 describe('radii', () => {
   test('coverRadius reaches the farthest corner', () => {
     expect(coverRadius({ x: 0, y: 0 }, 300, 400)).toBe(500 + 4 * 18)
