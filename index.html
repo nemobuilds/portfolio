@@ -5,8 +5,13 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>John Rogee Turqueza</title>
+    <meta name="description" content="Portfolio of John Rogee Turqueza, a software engineer who builds web apps and backend systems." />
+    <link rel="preload" href="/node_modules/@fontsource-variable/inter-tight/files/inter-tight-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/src/assets/fonts/talina.otf" as="font" type="font/otf" crossorigin />
     <script>(function(){try{var t=null;try{t=localStorage.getItem('theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t}catch(e){}})();</script>
+    <!-- First load in this tab: paint the boot colour before any JS, so there is no pale flash. App.tsx removes data-boot. -->
+    <script>(function(){var b=true;try{b=sessionStorage.getItem('boot-seen')!=='1'}catch(e){}if(b)document.documentElement.dataset.boot=''})();</script>
+    <style>:root[data-boot],:root[data-boot] body{background:#05080F!important}</style>
   </head>
   <body>
     <div id="root"></div>
