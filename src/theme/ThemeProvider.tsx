@@ -5,6 +5,8 @@ export type Theme = 'light' | 'dark'
 interface ThemeContextValue {
   theme: Theme
   toggleTheme: () => void
+  forcedTheme: Theme | null
+  setForcedTheme: (theme: Theme | null) => void
 }
 
 const STORAGE_KEY = 'theme'
@@ -27,10 +29,11 @@ function getInitialTheme(): Theme {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
+  const [forcedTheme, setForcedTheme] = useState<Theme | null>(null)
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
-  }, [theme])
+    document.documentElement.dataset.theme = forcedTheme ?? theme
+  }, [theme, forcedTheme])
 
   useEffect(() => {
     const query = window.matchMedia(DARK_QUERY)
@@ -51,7 +54,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setTheme(next)
   }
 
-  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>
+  return <ThemeContext.Provider value={{ theme, toggleTheme, forcedTheme, setForcedTheme }}>{children}</ThemeContext.Provider>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

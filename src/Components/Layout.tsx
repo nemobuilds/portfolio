@@ -23,7 +23,7 @@ const homeItems: PhoneSectionItem[] = [
 ]
 
 export function Layout({ surface, current, backLink, forceTheme, children }: Props) {
-  const { theme } = useTheme()
+  const { setForcedTheme } = useTheme()
   const navigate = useNavigate()
   useHashScroll()
 
@@ -31,22 +31,11 @@ export function Layout({ surface, current, backLink, forceTheme, children }: Pro
     document.documentElement.dataset.surface = surface
   }, [surface])
 
-  // ThemeProvider writes data-theme from a later effect, so watch the attribute while forced.
   useEffect(() => {
     if (!forceTheme) return
-    const root = document.documentElement
-    const apply = () => {
-      if (root.dataset.theme !== forceTheme) root.dataset.theme = forceTheme
-    }
-    apply()
-    const observer = new MutationObserver(apply)
-    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] })
-    return () => {
-      observer.disconnect()
-      root.dataset.theme = theme
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forceTheme])
+    setForcedTheme(forceTheme)
+    return () => setForcedTheme(null)
+  }, [forceTheme, setForcedTheme])
 
   const subItems: PhoneSectionItem[] = [
     {

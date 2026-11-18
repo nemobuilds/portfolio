@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { site } from '../content/site'
 import { useFocusTrap } from '../hooks/useFocusTrap'
+import { useTheme } from '../theme/ThemeProvider'
 import { Avatar } from './Avatar'
 import { BackLink } from './BackLink'
 import { Button } from './Button'
@@ -27,6 +28,7 @@ export function Navbar({ surface, current, backLink }: Props) {
   const closeButton = useRef<HTMLButtonElement>(null)
   const wasOpen = useRef(false)
   const isHome = surface === 'home'
+  const { forcedTheme } = useTheme()
 
   useFocusTrap(card, open)
 
@@ -54,9 +56,9 @@ export function Navbar({ surface, current, backLink }: Props) {
 
   return (
     <header className={`pointer-events-none fixed inset-x-0 z-50 ${isHome ? 'top-4' : 'top-3'}`}>
-      <div className="relative mx-auto flex w-full max-w-[1200px] items-center justify-center px-4">
+      <div className={`relative mx-auto flex w-full max-w-[1200px] items-center px-4 ${backLink && !isHome ? 'justify-between min-[760px]:justify-center' : 'justify-center'}`}>
         {backLink && !isHome && (
-          <div className="absolute left-4 hidden min-[760px]:block">
+          <div className="min-[760px]:absolute min-[760px]:left-4">
             <BackLink />
           </div>
         )}
@@ -89,7 +91,7 @@ export function Navbar({ surface, current, backLink }: Props) {
               <Button variant="primary" href={site.resumePath} download label="Résumé" />
             </nav>
 
-            {!isHome && <ThemeToggle />}
+            {!isHome && !forcedTheme && <ThemeToggle />}
 
             <button
               ref={menuButton}

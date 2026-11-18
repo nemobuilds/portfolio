@@ -1,7 +1,7 @@
-import { render, screen, within, waitFor, act, cleanup } from '@testing-library/react'
+import { render, screen, within, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, test, expect, vi, afterEach } from 'vitest'
+import { describe, test, expect, vi } from 'vitest'
 import { Navbar } from './Navbar'
 import { PhoneSectionBar } from './PhoneSectionBar'
 import { Layout } from './Layout'
@@ -16,12 +16,6 @@ function wrap(ui: React.ReactNode, path = '/') {
     </ThemeProvider>,
   )
 }
-
-afterEach(() => {
-  cleanup()
-  document.documentElement.removeAttribute('data-theme')
-  document.documentElement.removeAttribute('data-surface')
-})
 
 describe('Navbar', () => {
   test('brand link has the full-name label', () => {
@@ -163,7 +157,19 @@ describe('Layout', () => {
       </ThemeProvider>,
     )
     await waitFor(() => expect(document.documentElement.dataset.theme).toBe('light'))
-    localStorage.removeItem('theme')
+    expect(localStorage.getItem('theme')).toBe('light')
+  })
+})
+
+describe('forced theme', () => {
+  test('forceTheme layout renders no theme toggle', async () => {
+    wrap(
+      <Layout surface="sub" forceTheme="dark">
+        <h1>x</h1>
+      </Layout>,
+    )
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'))
+    expect(screen.queryByRole('button', { name: /Switch to/ })).toBeNull()
   })
 })
 

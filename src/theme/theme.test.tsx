@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { cleanup, render, screen, act } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ThemeProvider } from './ThemeProvider'
 import ThemeToggle from '../Components/ThemeToggle'
@@ -37,7 +37,6 @@ beforeEach(() => {
   document.documentElement.removeAttribute('data-theme')
 })
 afterEach(() => {
-  cleanup()
   vi.restoreAllMocks()
 })
 
