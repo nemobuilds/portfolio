@@ -59,7 +59,7 @@ export function Layout({ surface, current, backLink, forceTheme, children }: Pro
       <main id="main-content" className={`flex-1 ${surface === 'sub' ? 'pt-24' : ''} pb-14 min-[760px]:pb-0`}>
         {children}
       </main>
-      <Footer />
+      <Footer surface={surface} />
       <PhoneSectionBar items={surface === 'home' ? homeItems : subItems} />
     </div>
   )

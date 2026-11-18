@@ -6,7 +6,7 @@ export default function Hero() {
     <section
       id="top"
       aria-labelledby="hero-heading"
-      className="flex justify-center px-4 pt-9 pb-[68px] text-center min-[760px]:px-8 min-[760px]:pt-10 min-[760px]:pb-[72px]"
+      className="flex justify-center px-4 pt-[96px] pb-[68px] text-center min-[760px]:px-8 min-[760px]:pt-[112px] min-[760px]:pb-[72px]"
     >
       <div className="flex min-w-0 flex-col items-center gap-6">
         <p className="m-0 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[18px] text-[var(--text-secondary)]">

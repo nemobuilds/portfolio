@@ -28,12 +28,22 @@ test('home pins ink text and cream halo', () => {
   expect(home).toContain('--card-fill: linear-gradient(#EBEFF5, #DDE3EC)')
 })
 
-test('home body paints the water surface', () => {
-  expect(css).toMatch(/:root\[data-surface="home"\] body\s*\{\s*background: var\(--water-surface\)/)
+test('home canvas paints the water surface, body stays transparent so the fixed water layer shows', () => {
+  expect(css).toMatch(/:root\[data-surface="home"\]\s*\{\s*background: var\(--water-surface\)/)
+  expect(css).toMatch(/:root\[data-surface="home"\] body\s*\{\s*background: transparent/)
+})
+
+test('home sections clear the floating pill on hash jumps', () => {
+  const rule = block(':root[data-surface="home"] main > section[id]')
+  expect(rule).toMatch(/scroll-margin-top:\s*\d+px/)
 })
 
 test('glass is not keyed on data-theme; deep modifier uses dark glass', () => {
   expect(css).not.toMatch(/\[data-theme="dark"\]\s+\.surface-glass/)
   expect(block('.surface-glass')).toContain('var(--glass-light)')
   expect(block('.surface-glass--deep')).toContain('var(--glass-dark)')
+})
+
+test('gauge depth numbers are not faded (0.8 opacity failed 4.5:1 on shallows and reef)', () => {
+  expect(block('.depth-gauge__m')).not.toMatch(/opacity/)
 })

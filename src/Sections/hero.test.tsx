@@ -32,6 +32,14 @@ describe('Hero', () => {
     expect(screen.getByText('Building software, and learning how to keep it fast and up.')).toBeInTheDocument()
   })
 
+  test('top padding clears the floating pill (16px offset + ~54px tall)', () => {
+    const { container } = render(<MemoryRouter><Hero /></MemoryRouter>)
+    const cls = container.querySelector('#top')!.className
+    const pads = [...cls.matchAll(/pt-\[(\d+)px\]/g)].map((m) => Number(m[1]))
+    expect(pads.length).toBeGreaterThan(0)
+    for (const px of pads) expect(px).toBeGreaterThanOrEqual(88)
+  })
+
   test('both buttons link to the sections', () => {
     render(<MemoryRouter><Hero /></MemoryRouter>)
     expect(screen.getByRole('link', { name: /See the work/ })).toHaveAttribute('href', '#projects')
@@ -51,7 +59,8 @@ describe('HomePage', () => {
     for (const id of ['top', 'projects', 'experience', 'certificates', 'contact']) {
       expect(container.querySelector(`#${id}`)).not.toBeNull()
     }
-    expect(screen.getByTestId('water')).toBeInTheDocument()
+    const water = screen.getByTestId('water')
+    expect(water).toHaveClass('fixed', '-z-10')
     expect(document.documentElement.dataset.surface).toBe('home')
   })
 })

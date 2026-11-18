@@ -36,6 +36,21 @@ describe('Experience', () => {
     expect(screen.getAllByText(experience[0].description!)).toHaveLength(1)
   })
 
+  test('headings are cream at every width (ink fails on reef water)', () => {
+    render(<Experience />)
+    for (const name of ['Experience', 'Tech stack']) {
+      const h = screen.getByRole('heading', { level: 2, name })
+      expect(h.className).toContain('text-[var(--cream)]')
+      expect(h.className).not.toContain('ink')
+      expect(h.getAttribute('style') ?? '').not.toContain('ink')
+    }
+  })
+
+  test('earlier roles sit on dark glass under 900px', () => {
+    render(<Experience />)
+    expect(screen.getByRole('list', { name: 'Earlier roles' }).className).toContain('max-[899px]:bg-[var(--glass-dark)]')
+  })
+
   test('two separate headings, no combined heading', () => {
     render(<Experience />)
     expect(screen.getByRole('heading', { level: 2, name: 'Experience' })).toBeInTheDocument()

@@ -49,7 +49,7 @@ export function Navbar({ surface, current, backLink, hideThemeToggle }: Props) {
     return () => document.removeEventListener('keydown', onKey)
   }, [open])
 
-  const pillSurface = isHome ? 'surface-glass text-[var(--cream)]' : 'surface-slate'
+  const pillSurface = isHome ? 'surface-glass text-[var(--ink)]' : 'surface-slate'
   const linkBase =
     'relative inline-flex min-h-11 items-center px-3 text-[14px] font-semibold no-underline text-inherit hover:underline'
 

@@ -93,9 +93,20 @@ html {
   transition: background-color 300ms ease, color 300ms ease;
 }
 
-:root[data-surface="home"],
-:root[data-surface="home"] body {
+/* Home: the canvas (html) paints the surface colour as a fallback. The body
+   stays transparent so the fixed water layer (Water.tsx, z-index -10) paints
+   above the canvas and below the content. A body background would cover it. */
+:root[data-surface="home"] {
   background: var(--water-surface);
+}
+
+:root[data-surface="home"] body {
+  background: transparent;
+}
+
+/* Hash jumps land below the floating pill (16px offset + ~54px tall) */
+:root[data-surface="home"] main > section[id] {
+  scroll-margin-top: 88px;
 }
 
 body {
@@ -273,7 +284,7 @@ body {
   font-size: 12px;
   font-weight: 600;
 }
-.depth-gauge__m { font-variant-numeric: tabular-nums; opacity: 0.8; }
+.depth-gauge__m { font-variant-numeric: tabular-nums; }
 .depth-gauge__name {
   font-size: 14px;
   letter-spacing: -0.01em;
@@ -294,7 +305,6 @@ body {
 .depth-gauge a[aria-current] .depth-gauge__name,
 .depth-gauge a:hover .depth-gauge__name,
 .depth-gauge a:focus-visible .depth-gauge__name { opacity: 1; transform: none; }
-.depth-gauge a[aria-current] .depth-gauge__m { opacity: 1; }
 .depth-gauge a[aria-current] i::after {
   width: 12px;
   height: 12px;

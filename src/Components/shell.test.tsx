@@ -25,6 +25,14 @@ describe('Navbar', () => {
     expect(brand).toHaveTextContent('nemo')
   })
 
+  test('home pill is pale glass with ink text', () => {
+    wrap(<Navbar surface="home" />)
+    const pill = screen.getByRole('link', { name: 'John Rogee Turqueza, home' }).closest('.surface-glass')
+    expect(pill).not.toBeNull()
+    expect(pill!.className).toContain('text-[var(--ink)]')
+    expect(pill!.className).not.toContain('cream')
+  })
+
   test('current page is marked on /projects', () => {
     wrap(<Navbar surface="sub" current="projects" />, '/projects')
     const nav = screen.getByRole('navigation', { name: 'Main' })
@@ -198,6 +206,14 @@ describe('Footer', () => {
   test('renders copyright and tagline', () => {
     render(<Footer />)
     expect(screen.getByText('Nemo is still building.')).toBeInTheDocument()
+  })
+
+  test('home footer sits on the abyss, so it uses pale text; subpages keep secondary ink', () => {
+    const { container, unmount } = render(<Footer surface="home" />)
+    expect(container.querySelector('footer')!.className).toContain('text-[#B9C3E8]')
+    unmount()
+    const sub = render(<Footer surface="sub" />)
+    expect(sub.container.querySelector('footer')!.className).toContain('text-[var(--text-secondary)]')
   })
 })
 
