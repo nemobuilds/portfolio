@@ -25,11 +25,3 @@ export function CertificatesPage() {
     </Layout>
   )
 }
-
-export function NotFoundPage() {
-  return (
-    <Layout surface="sub" forceTheme="dark">
-      <h1>Page not found</h1>
-    </Layout>
-  )
-}
