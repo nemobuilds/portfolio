@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom'
 export type PhoneSectionItem = {
   label: string
   to: string
-  ariaLabel?: string
+  /** Extra words for screen readers, read after the visible label (WCAG 2.5.3). */
+  srText?: string
   onClick?: MouseEventHandler<HTMLAnchorElement>
 }
 
@@ -17,17 +18,23 @@ export function PhoneSectionBar({ items }: { items: PhoneSectionItem[] }) {
       aria-label="Page sections"
       className="fixed inset-x-0 bottom-0 z-40 flex bg-[#17161C] px-2 pb-[env(safe-area-inset-bottom)] min-[760px]:hidden"
     >
-      {items.map((item) =>
-        item.to.startsWith('#') ? (
-          <a key={item.label} href={item.to} aria-label={item.ariaLabel} onClick={item.onClick} className={itemClass}>
+      {items.map((item) => {
+        const text = (
+          <>
             {item.label}
+            {item.srText && <span className="sr-only">{item.srText}</span>}
+          </>
+        )
+        return item.to.startsWith('#') ? (
+          <a key={item.label} href={item.to} onClick={item.onClick} className={itemClass}>
+            {text}
           </a>
         ) : (
-          <Link key={item.label} to={item.to} aria-label={item.ariaLabel} onClick={item.onClick} className={itemClass}>
-            {item.label}
+          <Link key={item.label} to={item.to} onClick={item.onClick} className={itemClass}>
+            {text}
           </Link>
-        ),
-      )}
+        )
+      })}
     </nav>
   )
 }

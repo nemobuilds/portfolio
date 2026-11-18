@@ -65,12 +65,13 @@ export function Navbar({ surface, current, backLink, hideThemeToggle }: Props) {
           <div className="flex items-center gap-1 py-1 pl-2 pr-2">
             <Link
               to="/"
-              aria-label={`${site.name}, home`}
               className="inline-flex min-h-11 items-center gap-2 rounded-full pr-3 text-[15px] font-bold no-underline text-inherit"
             >
               <span className="min-[760px]:hidden"><Avatar size={28} /></span>
               <span className="hidden min-[760px]:inline-flex"><Avatar size={32} /></span>
               <span>{site.brand}</span>
+              {/* the name starts with the visible text (WCAG 2.5.3): "nemo, John Rogee Turqueza, home" */}
+              <span className="sr-only">, {site.name}, home</span>
             </Link>
 
             <nav aria-label="Main" className="hidden items-center gap-1 min-[760px]:flex">

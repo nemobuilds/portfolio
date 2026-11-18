@@ -18,7 +18,7 @@ type Props = {
 const homeItems: PhoneSectionItem[] = [
   { label: 'Projects', to: '#projects' },
   { label: 'Experience', to: '#experience' },
-  { label: 'Certs', to: '#certificates', ariaLabel: 'Certifications' },
+  { label: 'Certs', to: '#certificates', srText: ', Certifications' },
   { label: 'Contact', to: '#contact' },
 ]
 

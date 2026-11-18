@@ -18,16 +18,17 @@ function wrap(ui: React.ReactNode, path = '/') {
 }
 
 describe('Navbar', () => {
-  test('brand link has the full-name label', () => {
+  test('brand link name starts with the visible text, then the full name (WCAG 2.5.3)', () => {
     wrap(<Navbar surface="home" />)
-    const brand = screen.getByRole('link', { name: 'John Rogee Turqueza, home' })
+    const brand = screen.getByRole('link', { name: 'nemo, John Rogee Turqueza, home' })
     expect(brand).toHaveAttribute('href', '/')
-    expect(brand).toHaveTextContent('nemo')
+    expect(brand).not.toHaveAttribute('aria-label')
+    expect(brand.querySelector('.sr-only')).toHaveTextContent(', John Rogee Turqueza, home')
   })
 
   test('home pill is pale glass with ink text', () => {
     wrap(<Navbar surface="home" />)
-    const pill = screen.getByRole('link', { name: 'John Rogee Turqueza, home' }).closest('.surface-glass')
+    const pill = screen.getByRole('link', { name: 'nemo, John Rogee Turqueza, home' }).closest('.surface-glass')
     expect(pill).not.toBeNull()
     expect(pill!.className).toContain('text-[var(--ink)]')
     expect(pill!.className).not.toContain('cream')
@@ -111,17 +112,30 @@ describe('Navbar', () => {
 })
 
 describe('PhoneSectionBar', () => {
-  test('Certs item has the Certifications label', () => {
+  test('Certs item name keeps the visible text and adds Certifications (WCAG 2.5.3)', () => {
     wrap(
       <PhoneSectionBar
         items={[
           { label: 'Projects', to: '#projects' },
-          { label: 'Certs', to: '#certificates', ariaLabel: 'Certifications' },
+          { label: 'Certs', to: '#certificates', srText: ', Certifications' },
         ]}
       />,
     )
     const bar = screen.getByRole('navigation', { name: 'Page sections' })
-    expect(within(bar).getByRole('link', { name: 'Certifications' })).toHaveAttribute('href', '#certificates')
+    const certs = within(bar).getByRole('link', { name: 'Certs, Certifications' })
+    expect(certs).toHaveAttribute('href', '#certificates')
+    expect(certs).not.toHaveAttribute('aria-label')
+    expect(within(bar).getByRole('link', { name: 'Projects' })).toBeInTheDocument()
+  })
+
+  test('the home phone bar labels Certs with Certifications', () => {
+    wrap(
+      <Layout surface="home">
+        <p>x</p>
+      </Layout>,
+    )
+    const bar = screen.getByRole('navigation', { name: 'Page sections' })
+    expect(within(bar).getByRole('link', { name: 'Certs, Certifications' })).toHaveAttribute('href', '#certificates')
   })
 })
 
