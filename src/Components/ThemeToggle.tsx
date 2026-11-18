@@ -37,7 +37,9 @@ export default function ThemeToggle() {
       type="button"
       onClick={onClick}
       aria-label={`Switch to ${target} theme`}
-      className="surface-glass inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-[var(--text)]"
+      // Transparent on the pill, so the icon always uses the theme's text colour (the pale glass made the
+      // cream sun invisible in dark mode).
+      className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[var(--card-edge)] bg-transparent text-[var(--text)] transition-colors duration-250 hover:bg-[color-mix(in_srgb,var(--text)_10%,transparent)] motion-reduce:transition-none"
     >
       {target === 'light' ? (
         <svg {...iconProps}>

@@ -26,3 +26,16 @@ test('a failed switch raises no unhandled rejection and unlocks the toggle', asy
     process.off('unhandledRejection', unhandled)
   }
 })
+
+test('the toggle is transparent with the theme text colour, never pale glass (sun was invisible in dark)', () => {
+  document.documentElement.dataset.theme = 'dark'
+  render(
+    <ThemeProvider>
+      <ThemeToggle />
+    </ThemeProvider>,
+  )
+  const btn = screen.getByRole('button', { name: /Switch to/ })
+  expect(btn.className).not.toContain('surface-glass')
+  expect(btn.className).toContain('bg-transparent')
+  expect(btn.className).toContain('text-[var(--text)]')
+})
