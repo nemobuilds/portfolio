@@ -1,7 +1,5 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { expect, test } from 'vitest'
-import { homeProjects, nextProject, projects, validateProjects } from './projects'
+import { validateProjects } from './validate'
 
 const ok = (fm: string, body = '') => `---\n${fm}\n---\n${body}`
 const base = 'name: A\nsummary: S\ncategory: Web apps\norder: 1\nstack: [React]'
@@ -69,21 +67,4 @@ test('body becomes caseStudy HTML', () => {
 })
 test('no body means no caseStudy', () => {
   expect(validateProjects({ '/x/a.md': ok(base) }, yes)[0].caseStudy).toBeUndefined()
-})
-test('nextProject wraps to the first', () => {
-  expect(nextProject('ambition').slug).toBe('tachyon')
-  expect(nextProject('tachyon').slug).toBe('aws-s3-clone')
-})
-test('real content is valid', () => {
-  const dir = join('src', 'content', 'projects')
-  const files: Record<string, string> = {}
-  for (const f of readdirSync(dir).filter(f => f.endsWith('.md'))) {
-    files[`/${dir}/${f}`] = readFileSync(join(dir, f), 'utf8')
-  }
-  const fromFs = validateProjects(files, p => existsSync(join('public', p)))
-  expect(fromFs).toHaveLength(5)
-  expect(projects).toHaveLength(5)
-  expect(homeProjects.map(p => p.slug)).toEqual(['tachyon', 'aws-s3-clone', 'lore-of-legends', 'zealia', 'ambition'])
-  const sorted = [...fromFs].sort((a, b) => a.order - b.order)
-  expect(projects).toEqual(sorted)
 })

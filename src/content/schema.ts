@@ -1,21 +1,11 @@
 import { z } from 'zod'
+import { CATEGORIES } from './types'
 
 export class ContentError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'ContentError'
   }
-}
-
-export const CATEGORIES = ['Systems & backend', 'Full-stack & AI', 'Web apps'] as const
-export type Category = (typeof CATEGORIES)[number]
-
-export type CaseStudy = {
-  problem: string
-  approach: string
-  built: string
-  results?: string
-  learned?: string
 }
 
 const httpsUrl = z.string().url().refine(u => u.startsWith('https://'), 'must start with https://')
@@ -45,29 +35,6 @@ export const frontmatterSchema = z.object({
 })
 
 export type Frontmatter = z.infer<typeof frontmatterSchema>
-
-export type Project = {
-  slug: string
-  name: string
-  summary: string
-  description?: string
-  category: Category
-  order: number
-  home: boolean
-  homeOrder?: number
-  stack: string[]
-  repoUrl?: string
-  liveUrl?: string
-  isPrivate: boolean
-  extraLinks: { label: string; url: string }[]
-  role?: string
-  period?: string
-  cover?: { image?: string; video?: string; poster?: string }
-  thumbnail?: string
-  gallery: { src: string; caption: string }[]
-  approachDiagram?: string
-  caseStudy?: CaseStudy
-}
 
 export function formatIssues(file: string, error: z.ZodError): string {
   return error.issues
