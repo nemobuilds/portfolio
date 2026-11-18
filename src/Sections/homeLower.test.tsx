@@ -3,15 +3,43 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, test } from 'vitest'
 import HomeCertifications from './HomeCertifications'
 import Contact from './Contact'
-import DepthGauge, { currentStop, gaugeStops } from '../Components/DepthGauge'
+import DepthGauge, { gaugeState, readingLine, gaugeStops } from '../Components/DepthGauge'
 import { homeCertificates } from '../content/certifications'
 
-describe('currentStop', () => {
-  test('picks the last section whose top is above the viewport middle', () => {
-    expect(currentStop([0, 800, 1600], 900)).toBe(1)
-    expect(currentStop([0, 800, 1600], 100)).toBe(0)
-    expect(currentStop([0, 800, 1600], 5000)).toBe(2)
-    expect(currentStop([100, 800], 50)).toBe(0)
+describe('readingLine', () => {
+  test('runs from the viewport top at the page top to the page end at the bottom', () => {
+    expect(readingLine(0, 1400, 3000)).toBe(0)
+    expect(readingLine(1600, 1400, 3000)).toBe(3000)
+    expect(readingLine(800, 1400, 3000)).toBe(800 + 700)
+  })
+  test('a page that cannot scroll reads at its top', () => {
+    expect(readingLine(0, 1400, 1000)).toBe(0)
+  })
+})
+
+describe('gaugeState', () => {
+  const tops = [0, 600, 1800, 2400, 2800]
+  test('at the very top: Surface is current and the line is empty, even on a tall screen', () => {
+    expect(gaugeState(tops, 0)).toEqual({ current: 0, fill: 0 })
+  })
+  test('the line fills exactly to the current stop when the reading line is on a section top', () => {
+    expect(gaugeState(tops, 600)).toEqual({ current: 1, fill: 0.25 })
+    expect(gaugeState(tops, 2800)).toEqual({ current: 4, fill: 1 })
+  })
+  test('between two stops the line sits part way, never past the next stop', () => {
+    const s = gaugeState(tops, 1200)
+    expect(s.current).toBe(1)
+    expect(s.fill).toBeCloseTo(0.25 + 0.5 * 0.25)
+  })
+  test('the fill never runs ahead of the current stop or behind it', () => {
+    for (let line = 0; line <= 3200; line += 50) {
+      const { current, fill } = gaugeState(tops, line)
+      expect(fill).toBeGreaterThanOrEqual(current / 4)
+      expect(fill).toBeLessThan(current === 4 ? 1.0001 : (current + 1) / 4)
+    }
+  })
+  test('missing sections are skipped', () => {
+    expect(gaugeState([0, Infinity, 1800], 2000).current).toBe(2)
   })
 })
 
