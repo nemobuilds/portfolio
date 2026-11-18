@@ -36,6 +36,11 @@
   --scan: #FFFFFF;
   --focus-ring: #17161C;
   --focus-halo: #F4EEE3;
+  --avatar-fill: #DDE3EC;
+  --avatar-ink: #17161C;
+  --avatar-ring: rgb(23 22 28 / 0.18);
+  --placeholder-fill: #C9D0DC;
+  --placeholder-ink: #3A4058;
 }
 
 [data-theme="dark"] {
@@ -50,6 +55,11 @@
   --scan: #F3F5F9;
   --focus-ring: #EFECE3;
   --focus-halo: #17161C;
+  --avatar-fill: #2D313A;
+  --avatar-ink: #EFECE3;
+  --avatar-ring: rgb(200 212 250 / 0.36);
+  --placeholder-fill: #2D313A;
+  --placeholder-ink: #C3C7D2;
 }
 
 /* Home never follows data-theme: water gradient, ink text, cream halo.
@@ -66,6 +76,11 @@
   --scan: #FFFFFF;
   --focus-ring: #17161C;
   --focus-halo: #F4EEE3;
+  --avatar-fill: #DDE3EC;
+  --avatar-ink: #17161C;
+  --avatar-ring: rgb(23 22 28 / 0.18);
+  --placeholder-fill: #C9D0DC;
+  --placeholder-ink: #3A4058;
 }
 
 html {

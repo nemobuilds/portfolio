@@ -8,7 +8,7 @@ export function Avatar({ size, src = site.avatarPath, alt = '' }: { size: 28 | 3
     return (
       <span
         aria-hidden="true"
-        className="inline-flex items-center justify-center rounded-full shrink-0 bg-[#17161C] text-[#F4EEE3] font-bold"
+        className="inline-flex items-center justify-center rounded-full shrink-0 bg-[var(--avatar-fill)] text-[var(--avatar-ink)] font-bold ring-1 ring-inset ring-[var(--avatar-ring)]"
         style={{ ...frame, fontSize: size * 0.42 }}
       >
         JR
@@ -22,7 +22,7 @@ export function Avatar({ size, src = site.avatarPath, alt = '' }: { size: 28 | 3
       width={size}
       height={size}
       onError={() => setFailed(true)}
-      className="block rounded-full object-cover shrink-0"
+      className="block rounded-full object-cover shrink-0 ring-1 ring-inset ring-[var(--avatar-ring)]"
       style={frame}
     />
   )

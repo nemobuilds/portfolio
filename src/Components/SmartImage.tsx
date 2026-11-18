@@ -20,7 +20,7 @@ export function SmartImage({
         <ImageFallback initial={initial} failed={!!src} />
       ) : (
         <>
-          {state === 'loading' && <div className="absolute inset-0 bg-[#C9D0DC]" />}
+          {state === 'loading' && <div className="absolute inset-0 bg-[var(--placeholder-fill)]" />}
           <img
             src={src}
             alt={alt}

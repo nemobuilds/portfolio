@@ -8,7 +8,7 @@ export function ImageFallback({
   label?: string
 }) {
   return (
-    <div className="w-full h-full min-h-full flex items-center justify-center bg-[#C9D0DC] text-[#3A4058]">
+    <div className="w-full h-full min-h-full flex items-center justify-center bg-[var(--placeholder-fill)] text-[var(--placeholder-ink)]">
       {failed || !initial ? (
         <span className="text-[13px]">{label}</span>
       ) : (

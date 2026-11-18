@@ -27,6 +27,17 @@ describe('primitives', () => {
     expect(img).toHaveAttribute('src', '/images/avatar.jpg')
   })
 
+  test('Avatar image and fallback carry the themed ring', () => {
+    const { container } = render(<Avatar size={32} />)
+    const img = container.querySelector('img')!
+    expect(img.className).toContain('ring-[var(--avatar-ring)]')
+    fireEvent.error(img)
+    const jr = container.querySelector('span')!
+    expect(jr.className).toContain('ring-[var(--avatar-ring)]')
+    expect(jr.className).toContain('bg-[var(--avatar-fill)]')
+    expect(jr.className).toContain('text-[var(--avatar-ink)]')
+  })
+
   test('StackList folds extras', () => {
     render(<StackList items={['A', 'B', 'C', 'D', 'E', 'F']} limit={4} />)
     const more = screen.getByText('+2 more')
