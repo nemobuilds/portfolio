@@ -63,4 +63,16 @@ describe('HomePage', () => {
     expect(water).toHaveClass('fixed', '-z-10')
     expect(document.documentElement.dataset.surface).toBe('home')
   })
+
+  test('sets the document title back to the name (subpages change it)', () => {
+    document.title = 'Tachyon · John Rogee Turqueza'
+    render(
+      <ThemeProvider>
+        <MemoryRouter>
+          <HomePage />
+        </MemoryRouter>
+      </ThemeProvider>,
+    )
+    expect(document.title).toBe('John Rogee Turqueza')
+  })
 })

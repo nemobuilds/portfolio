@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Layout } from '../Components/Layout'
 import { Aquarium } from '../aquarium/Aquarium'
 import Contact from '../Sections/Contact'
@@ -10,6 +11,10 @@ import { Water } from '../Sections/Water'
 
 // Sections from Experience down are deep (dark glass, pale text).
 export default function HomePage() {
+  useEffect(() => {
+    document.title = 'John Rogee Turqueza'
+  }, [])
+
   return (
     <Layout surface="home">
       <Water />
