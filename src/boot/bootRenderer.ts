@@ -291,11 +291,7 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     ctx.fillRect(0, 0, W, H)
     window.addEventListener('resize', onResize)
     const fonts = document.fonts
-    Promise.all(
-      fonts?.load
-        ? [`400 1em ${NAME_FONT}`, `italic 400 1em ${SERIF_FONT}`, `500 1em ${UI_FONT}`].map(f => fonts.load(f).catch(() => []))
-        : [],
-    ).then(() => {
+    Promise.resolve(fonts?.load('400 40px "Talina"')).catch(() => []).then(() => {
       if (destroyed) return
       fontsReady = true
       layout()

@@ -23,8 +23,17 @@ export function BootScreen({ onDone }: { onDone(): void }) {
       markBootSeen()
       onDoneRef.current()
     }
-    const skip = () => {
+    const skip = (e: Event) => {
       if (!active) return
+      if (e.type !== 'keydown') {
+        // The same gesture's click would land on whatever is under the overlay.
+        const swallow = (ev: Event) => {
+          ev.preventDefault()
+          ev.stopPropagation()
+        }
+        window.addEventListener('click', swallow, true)
+        setTimeout(() => window.removeEventListener('click', swallow, true), 500)
+      }
       renderer.skip()
       finish()
     }

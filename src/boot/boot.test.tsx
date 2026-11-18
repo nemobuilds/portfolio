@@ -74,7 +74,7 @@ describe('BootScreen', () => {
     expect(sessionStorage.getItem('boot-seen')).toBe('1')
   })
 
-  test('the app is inert while booting and focus lands on the SkipLink after', async () => {
+  test('the app is inert while booting and focus stays at the document start after', async () => {
     render(
       <MemoryRouter initialEntries={['/nowhere']}>
         <App />
@@ -89,8 +89,38 @@ describe('BootScreen', () => {
 
     expect(screen.queryByRole('status', { name: LABEL })).not.toBeInTheDocument()
     expect(heading.closest('[inert]')).toBeNull()
+    expect(document.activeElement).toBe(document.body)
+    await userEvent.tab()
     expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveFocus()
     expect(sessionStorage.getItem('boot-seen')).toBe('1')
+  })
+
+  test('a pointer skip does not click through to the link underneath', () => {
+    vi.useFakeTimers()
+    const onDone = vi.fn()
+    const onClick = vi.fn()
+    render(
+      <>
+        <a href="#work" onClick={onClick}>
+          See the work
+        </a>
+        <BootScreen onDone={onDone} />
+      </>,
+    )
+    const link = screen.getByRole('link', { name: 'See the work' })
+    act(() => {
+      window.dispatchEvent(new Event('pointerdown'))
+    })
+    expect(onDone).toHaveBeenCalledTimes(1)
+    const click = new MouseEvent('click', { bubbles: true, cancelable: true })
+    link.dispatchEvent(click)
+    expect(onClick).not.toHaveBeenCalled()
+    expect(click.defaultPrevented).toBe(true)
+    act(() => {
+      vi.advanceTimersByTime(600)
+    })
+    link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+    expect(onClick).toHaveBeenCalledTimes(1)
   })
 
   test('no boot when it was already seen this session', () => {

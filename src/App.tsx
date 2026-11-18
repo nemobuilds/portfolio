@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './theme/ThemeProvider'
 import { BootScreen } from './boot/BootScreen'
@@ -19,12 +19,6 @@ function firstBoot(): boolean {
 
 export default function App() {
   const [booting, setBooting] = useState(firstBoot)
-  const booted = useRef(false)
-
-  useEffect(() => {
-    if (booting) booted.current = true
-    else if (booted.current) document.querySelector<HTMLElement>('.skip-link')?.focus()
-  }, [booting])
 
   return (
     <ThemeProvider>
