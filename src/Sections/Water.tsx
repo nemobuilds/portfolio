@@ -7,6 +7,7 @@ const STOPS = ['#e9f0f9', '#93b1e6', '#3557c2', '#0a0e28', '#05080f'].map((hex) 
 ])
 
 /** Piecewise mix across the five water stops at 0, .25, .5, .75, 1. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function waterColor(depth: number): string {
   const d = Math.min(1, Math.max(0, depth))
   const pos = d * (STOPS.length - 1)

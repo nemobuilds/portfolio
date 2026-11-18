@@ -25,6 +25,7 @@ export function CertificateScan({ certificate }: { certificate: Certificate }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function issuerLine(c: Certificate): string {
   return c.via ? `${c.issuer}, via ${c.via}` : c.issuer
 }

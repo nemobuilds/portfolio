@@ -3,6 +3,7 @@ import { useScrollDepth } from '../hooks/useScrollDepth'
 
 export type GaugeStop = { label: string; depth: string; target: string }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const gaugeStops: GaugeStop[] = [
   { label: 'Surface', depth: '0 m', target: '#top' },
   { label: 'Projects', depth: '12 m', target: '#projects' },
@@ -12,6 +13,7 @@ export const gaugeStops: GaugeStop[] = [
 ]
 
 /** Index of the last section whose top is at or above the viewport middle (0 if none). */
+// eslint-disable-next-line react-refresh/only-export-components
 export function currentStop(sectionTops: number[], viewportMid: number): number {
   let current = 0
   sectionTops.forEach((top, i) => {

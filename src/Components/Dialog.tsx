@@ -11,8 +11,11 @@ type Props = {
 export function Dialog({ open, onClose, titleId, children }: Props) {
   const panel = useRef<HTMLDivElement>(null)
   const closeRef = useRef(onClose)
-  closeRef.current = onClose
   useFocusTrap(panel, open)
+
+  useEffect(() => {
+    closeRef.current = onClose
+  })
 
   useEffect(() => {
     if (!open) return

@@ -66,7 +66,7 @@ export function validateProjects(
 ): Project[] {
   const out: Project[] = []
   for (const [file, raw] of Object.entries(files)) {
-    const slug = (file.split(/[\/]/).pop() ?? '').replace(/\.md$/, '')
+    const slug = (file.split(/[\\/]/).pop() ?? '').replace(/\.md$/, '')
     if (!/^[a-z0-9-]+$/.test(slug)) {
       throw new ContentError(`${file}: slug "${slug}" must match ^[a-z0-9-]+$`)
     }
