@@ -93,5 +93,5 @@ export default function CaseStudyPage() {
   const { slug } = useParams()
   const project = slug ? getProject(slug) : undefined
   if (!project) return <NotFoundPage variant="project" />
-  return <CaseStudyView project={project} />
+  return <CaseStudyView key={project.slug} project={project} />
 }

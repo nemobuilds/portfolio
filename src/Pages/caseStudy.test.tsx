@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, test, expect } from 'vitest'
 import { ThemeProvider } from '../theme/ThemeProvider'
@@ -157,5 +158,13 @@ describe('CaseStudyPage route', () => {
     const link = screen.getByRole('link', { name: /Next project:/ })
     expect(link).toHaveAttribute('href', '/projects/tachyon')
     expect(link).toHaveTextContent(getProject('tachyon')!.name)
+  })
+
+  test('Next project remounts the view, so per-project state starts fresh', async () => {
+    route('/projects/ambition')
+    const before = screen.getByRole('heading', { level: 1 })
+    await userEvent.click(screen.getByRole('link', { name: /Next project:/ }))
+    const after = screen.getByRole('heading', { level: 1, name: getProject('tachyon')!.name })
+    expect(after).not.toBe(before)
   })
 })
