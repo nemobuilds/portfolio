@@ -1,4 +1,5 @@
 import { Layout } from '../Components/Layout'
+import { Aquarium } from '../aquarium/Aquarium'
 import Contact from '../Sections/Contact'
 import DepthGauge, { gaugeStops } from '../Components/DepthGauge'
 import Experience from '../Sections/Experience'
@@ -12,6 +13,7 @@ export default function HomePage() {
   return (
     <Layout surface="home">
       <Water />
+      <Aquarium mode="home" />
       <Hero />
       <section id="projects" aria-labelledby="projects-heading">
         <HomeProjects />
@@ -22,7 +24,8 @@ export default function HomePage() {
       <section id="certificates" data-depth="deep" aria-labelledby="certifications-heading">
         <HomeCertifications />
       </section>
-      <section id="contact" data-depth="deep" aria-labelledby="contact-heading">
+      {/* the bottom padding is the sea floor: seabed and anglerfish sit between the socials and the footer */}
+      <section id="contact" data-depth="deep" aria-labelledby="contact-heading" className="pb-[250px] min-[760px]:pb-[270px]">
         <Contact />
       </section>
       <DepthGauge stops={gaugeStops} />

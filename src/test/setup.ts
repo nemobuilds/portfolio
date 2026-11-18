@@ -26,3 +26,7 @@ afterEach(() => {
   document.documentElement.removeAttribute('data-surface')
   localStorage.clear()
 })
+
+// jsdom has no canvas and logs "not implemented" for getContext. Pages that
+// mount the aquarium get no context; aquarium tests mock their own.
+HTMLCanvasElement.prototype.getContext = (() => null) as typeof HTMLCanvasElement.prototype.getContext

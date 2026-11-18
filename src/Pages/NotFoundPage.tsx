@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Layout } from '../Components/Layout'
 import { Button } from '../Components/Button'
+import { Aquarium } from '../aquarium/Aquarium'
 
 const copy = {
   page: {
@@ -24,6 +25,7 @@ export default function NotFoundPage({ variant = 'page' }: { variant?: 'page' | 
 
   return (
     <Layout surface="sub" forceTheme="dark">
+      <Aquarium mode="angler-only" />
       <div className="mx-auto flex max-w-[1200px] flex-col items-start gap-6 px-6 pt-16 min-[760px]:pt-[72px]">
         <h1 className="m-0 text-[48px] font-bold leading-[0.95] tracking-[-0.04em] text-[#F4EEE3] min-[760px]:text-[104px]">
           {title}

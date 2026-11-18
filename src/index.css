@@ -104,6 +104,16 @@ html {
   background: transparent;
 }
 
+/* 404: the aquarium canvas (z-index -5) paints over the root background, so the
+   page gradient moves from body to html to keep the canvas visible. */
+:root[data-aquarium="angler-only"] {
+  background: linear-gradient(var(--page-top), var(--page-bottom)) fixed;
+}
+
+:root[data-aquarium="angler-only"] body {
+  background: transparent;
+}
+
 /* Hash jumps land below the floating pill (16px offset + ~54px tall) */
 :root[data-surface="home"] main > section[id] {
   scroll-margin-top: 88px;

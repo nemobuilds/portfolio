@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
 export function depthAt(scrollY: number, maxScroll: number): number {
   if (!(maxScroll > 0)) return 0
@@ -10,31 +10,45 @@ function read(): number {
   return depthAt(window.scrollY, max)
 }
 
-/** Scroll depth 0-1, rAF-throttled. Also writes --depth on <html>. */
-export function useScrollDepth(): number {
-  const [depth, setDepth] = useState(0)
+// One shared scroll subscription for every caller. Each separate reader would
+// read scrollHeight after another wrote --depth, which forces a full style
+// recalculation per reader per frame.
+let depth = 0
+let frame = 0
+const listeners = new Set<() => void>()
 
-  useEffect(() => {
-    let frame = 0
-    const apply = () => {
-      frame = 0
-      const d = read()
-      document.documentElement.style.setProperty('--depth', d.toFixed(4))
-      setDepth(d)
-    }
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(apply)
-    }
-    apply()
+function apply() {
+  frame = 0
+  depth = read()
+  document.documentElement.style.setProperty('--depth', depth.toFixed(4))
+  listeners.forEach((l) => l())
+}
+
+function schedule() {
+  if (!frame) frame = requestAnimationFrame(apply)
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener)
+  if (listeners.size === 1) {
     window.addEventListener('scroll', schedule, { passive: true })
     window.addEventListener('resize', schedule)
-    return () => {
-      window.removeEventListener('scroll', schedule)
-      window.removeEventListener('resize', schedule)
-      if (frame) cancelAnimationFrame(frame)
-      document.documentElement.style.removeProperty('--depth')
-    }
-  }, [])
+    apply()
+  }
+  return () => {
+    listeners.delete(listener)
+    if (listeners.size) return
+    window.removeEventListener('scroll', schedule)
+    window.removeEventListener('resize', schedule)
+    if (frame) cancelAnimationFrame(frame)
+    frame = 0
+    document.documentElement.style.removeProperty('--depth')
+  }
+}
 
-  return depth
+const snapshot = () => depth
+
+/** Scroll depth 0-1, rAF-throttled. Also writes --depth on <html>. */
+export function useScrollDepth(): number {
+  return useSyncExternalStore(subscribe, snapshot, snapshot)
 }
