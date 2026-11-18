@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, useLocation } from 'react-router-dom'
+import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom'
 import { Routes, Route } from 'react-router-dom'
 import { describe, test, expect } from 'vitest'
 import { ThemeProvider } from '../theme/ThemeProvider'
@@ -13,10 +13,16 @@ function Where() {
   return <output data-testid="where">{l.pathname}</output>
 }
 
-function page(path = '/certificates') {
+function Back() {
+  const navigate = useNavigate()
+  return <button onClick={() => navigate(-1)}>test-back</button>
+}
+
+function page(path = '/certificates', entries?: string[]) {
   return render(
     <ThemeProvider>
-      <MemoryRouter initialEntries={[path]}>
+      <MemoryRouter initialEntries={entries ?? [path]} initialIndex={entries ? entries.length - 1 : 0}>
+        <Back />
         <Routes>
           <Route path="/certificates" element={<CertificatesPage />} />
           <Route path="/certificates/:id" element={<CertificatesPage />} />
@@ -83,6 +89,41 @@ describe('CertificatesPage', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(screen.getByTestId('where')).toHaveTextContent(/^\/certificates$/)
     expect(link).toHaveFocus()
+  })
+
+  test('card, Next, then close leaves the list, and Back does not reopen a dialog', async () => {
+    page('/certificates', ['/start', '/certificates'])
+    await userEvent.click(within(cardFor('CCST Cybersecurity')).getByRole('link', { name: 'CCST Cybersecurity' }))
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('link', { name: /Next/ }))
+    expect(screen.getByTestId('where')).toHaveTextContent('/certificates/intro-software-engineering')
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByTestId('where')).toHaveTextContent(/^\/certificates$/)
+    await userEvent.click(screen.getByRole('button', { name: 'test-back' }))
+    expect(screen.getByTestId('where')).toHaveTextContent(/^\/start$/)
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  test('Back while the dialog is open closes it', async () => {
+    page('/certificates')
+    await userEvent.click(within(cardFor('CCST Cybersecurity')).getByRole('link', { name: 'CCST Cybersecurity' }))
+    await userEvent.click(screen.getByRole('button', { name: 'test-back' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByTestId('where')).toHaveTextContent(/^\/certificates$/)
+  })
+
+  test('deep link /certificates/pcap closes to /certificates with focus on the h1', async () => {
+    page('/certificates/pcap')
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByTestId('where')).toHaveTextContent(/^\/certificates$/)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveFocus()
+  })
+
+  test('scrim click closes the dialog', async () => {
+    page('/certificates/ccst-cybersecurity')
+    await userEvent.click(screen.getByTestId('dialog-scrim'))
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   test('deep link close focuses the h1', async () => {

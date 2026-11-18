@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import type { Certificate } from '../content/certifications'
 import { verifyLabel } from '../content/certifications'
 import { formatMonth } from '../content/dates'
@@ -28,6 +28,7 @@ type Props = {
 
 export function CertificateDialog({ certificate, previous, next, onClose }: Props) {
   const title = useRef<HTMLHeadingElement>(null)
+  const { state } = useLocation()
   useEffect(() => {
     title.current?.focus()
   }, [certificate.id])
@@ -67,7 +68,7 @@ export function CertificateDialog({ certificate, previous, next, onClose }: Prop
           className="mt-5 flex justify-between gap-4 border-t border-[color-mix(in_srgb,var(--text)_16%,transparent)] pt-4"
         >
           {previous ? (
-            <Link to={`/certificates/${previous.id}`} className="flex min-h-11 flex-col gap-0.5 text-[var(--text)] no-underline hover:underline">
+            <Link to={`/certificates/${previous.id}`} replace state={state} className="flex min-h-11 flex-col gap-0.5 text-[var(--text)] no-underline hover:underline">
               <span className="inline-flex items-center gap-1.5 text-[14px] font-bold">
                 <Icon name="arrow-left" size={16} /> Previous
               </span>
@@ -77,7 +78,7 @@ export function CertificateDialog({ certificate, previous, next, onClose }: Prop
             <span />
           )}
           {next && (
-            <Link to={`/certificates/${next.id}`} className="flex min-h-11 flex-col items-end gap-0.5 text-right text-[var(--text)] no-underline hover:underline">
+            <Link to={`/certificates/${next.id}`} replace state={state} className="flex min-h-11 flex-col items-end gap-0.5 text-right text-[var(--text)] no-underline hover:underline">
               <span className="inline-flex items-center gap-1.5 text-[14px] font-bold">
                 Next <Icon name="arrow" size={16} />
               </span>

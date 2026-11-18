@@ -31,7 +31,7 @@ export function Dialog({ open, onClose, titleId, children }: Props) {
   if (!open) return null
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 min-[760px]:items-center min-[760px]:p-6">
-      <div className="fixed inset-0 bg-[rgba(22,32,72,0.42)]" onClick={onClose} aria-hidden="true" />
+      <div data-testid="dialog-scrim" className="fixed inset-0 bg-[rgba(22,32,72,0.42)]" onClick={onClose} aria-hidden="true" />
       <div
         ref={panel}
         role="dialog"

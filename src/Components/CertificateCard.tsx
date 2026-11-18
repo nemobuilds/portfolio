@@ -50,6 +50,7 @@ export default function CertificateCard({
         <h3 className={`m-0 font-bold leading-[1.2] tracking-[-0.02em] ${home ? 'text-[18px]' : 'text-[21px]'}`}>
           <Link
             to={`/certificates/${certificate.id}`}
+            state={{ fromList: true }}
             data-cert-id={certificate.id}
             className="text-[var(--text)] no-underline after:absolute after:inset-0 after:content-['']"
           >

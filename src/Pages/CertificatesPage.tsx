@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../Components/Layout'
 import CertificateCard from '../Components/CertificateCard'
 import { CertificateDialog } from '../Components/CertificateDialog'
@@ -12,6 +12,8 @@ const SITE = 'John Rogee Turqueza'
 export default function CertificatesPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const fromList = !!(location.state as { fromList?: boolean } | null)?.fromList
   const certificate = id ? getCertificate(id) : undefined
   const missing = !!id && !certificate
   const openedFromCard = useRef(false)
@@ -36,7 +38,10 @@ export default function CertificatesPage() {
     target?.focus()
   }, [id])
 
-  const close = useCallback(() => navigate('/certificates', { replace: true }), [navigate])
+  const close = useCallback(() => {
+    if (fromList) navigate(-1)
+    else navigate('/certificates', { replace: true })
+  }, [navigate, fromList])
 
   if (missing) return <NotFoundPage />
 
