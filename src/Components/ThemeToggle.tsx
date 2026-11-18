@@ -1,4 +1,7 @@
+import { useRef, type MouseEvent } from 'react'
+import { flushSync } from 'react-dom'
 import { useTheme } from '../theme/ThemeProvider'
+import { animateThemeSwitch } from '../theme/themeTransition'
 
 const iconProps = {
   width: 20,
@@ -15,11 +18,22 @@ const iconProps = {
 export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
   const target = theme === 'dark' ? 'light' : 'dark'
+  const running = useRef(false)
+
+  const onClick = (e: MouseEvent<HTMLButtonElement>) => {
+    if (running.current) return
+    running.current = true
+    const rect = e.currentTarget.getBoundingClientRect()
+    const origin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+    animateThemeSwitch(origin, () => flushSync(toggleTheme)).finally(() => {
+      running.current = false
+    })
+  }
 
   return (
     <button
       type="button"
-      onClick={toggleTheme}
+      onClick={onClick}
       aria-label={`Switch to ${target} theme`}
       className="surface-glass inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-[var(--text)]"
     >

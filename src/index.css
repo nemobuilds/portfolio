@@ -325,3 +325,15 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .depth-gauge, .depth-gauge__name { transition: none; }
 }
+
+/* Theme switch: the circle clip is animated from script (themeTransition.ts). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-group(theme-band),
+::view-transition-old(theme-band),
+::view-transition-new(theme-band) {
+  animation: none;
+}
