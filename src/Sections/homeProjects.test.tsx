@@ -41,4 +41,19 @@ describe('HomeProjects', () => {
     expect(within(stage()).getByRole('heading', { name: 'AMBITION' })).toBeInTheDocument()
     expect(row).toHaveAttribute('aria-pressed', 'false')
   })
+
+  test('only a small live region announces the selected project; hover is silent', async () => {
+    const user = userEvent.setup()
+    setup()
+    expect(stage()).not.toHaveAttribute('aria-live')
+    const live = document.querySelector('[aria-live="polite"]')!
+    expect(live).toHaveClass('sr-only')
+    expect(live).toHaveTextContent(homeProjects[0].name)
+    const row = screen.getByRole('button', { name: /AMBITION/ })
+    fireEvent.pointerEnter(row, { pointerType: 'mouse' })
+    expect(live).toHaveTextContent(homeProjects[0].name)
+    await user.click(row)
+    expect(live).toHaveTextContent('AMBITION')
+    expect(document.querySelectorAll('[aria-live]')).toHaveLength(1)
+  })
 })

@@ -7,16 +7,19 @@ import { SmartImage } from './SmartImage'
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-export function PreviewStage({ project }: { project: Project }) {
+/** `selectedName` feeds a hidden live region: a selection is announced, a mouse hover preview is not. */
+export function PreviewStage({ project, selectedName }: { project: Project; selectedName: string }) {
   const { cover, name, summary, caseStudy } = project
   const [reduced] = useState(prefersReducedMotion)
   return (
     <div
       role="region"
       aria-label="Project preview"
-      aria-live="polite"
       className="surface-glass min-w-0 rounded-[10px] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_26px_36px_-18px_rgba(8,14,50,0.4)] min-[760px]:p-2.5"
     >
+      <p aria-live="polite" className="sr-only">
+        {selectedName}
+      </p>
       <div className="overflow-hidden rounded-[5px] bg-[radial-gradient(ellipse_at_50%_120%,#1A2A6A,#05080F_62%)]">
         {cover?.video ? (
           <video

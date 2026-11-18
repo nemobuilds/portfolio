@@ -7,8 +7,9 @@ import { ProjectRow } from '../Components/ProjectRow'
 export default function HomeProjects() {
   const [selectedSlug, setSelectedSlug] = useState(homeProjects[0]?.slug)
   const [hoverSlug, setHoverSlug] = useState<string>()
-  const shown = homeProjects.find((p) => p.slug === (hoverSlug ?? selectedSlug)) ?? homeProjects[0]
-  if (!shown) return null
+  const selected = homeProjects.find((p) => p.slug === selectedSlug) ?? homeProjects[0]
+  if (!selected) return null
+  const shown = homeProjects.find((p) => p.slug === hoverSlug) ?? selected
   return (
     <div className="mx-auto w-full max-w-[1200px] px-4 py-12 min-[760px]:px-8 min-[760px]:py-16">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -36,7 +37,7 @@ export default function HomeProjects() {
             />
           ))}
         </div>
-        <PreviewStage project={shown} />
+        <PreviewStage project={shown} selectedName={selected.name} />
       </div>
     </div>
   )
