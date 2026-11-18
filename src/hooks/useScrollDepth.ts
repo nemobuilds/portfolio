@@ -10,9 +10,8 @@ function read(): number {
   return depthAt(window.scrollY, max)
 }
 
-// One shared scroll subscription for every caller. Each separate reader would
-// read scrollHeight after another wrote --depth, which forces a full style
-// recalculation per reader per frame.
+// One shared scroll subscription for every caller: one scroll listener and one
+// scrollHeight read per frame, however many components ask for the depth.
 let depth = 0
 let frame = 0
 const listeners = new Set<() => void>()
@@ -20,7 +19,6 @@ const listeners = new Set<() => void>()
 function apply() {
   frame = 0
   depth = read()
-  document.documentElement.style.setProperty('--depth', depth.toFixed(4))
   listeners.forEach((l) => l())
 }
 
@@ -42,13 +40,15 @@ function subscribe(listener: () => void): () => void {
     window.removeEventListener('resize', schedule)
     if (frame) cancelAnimationFrame(frame)
     frame = 0
-    document.documentElement.style.removeProperty('--depth')
+    depth = 0
   }
 }
 
-const snapshot = () => depth
+// With no subscribers the cached value may be stale (a remount after a deep
+// scroll), so read live until the first subscription.
+const snapshot = () => (listeners.size ? depth : read())
 
-/** Scroll depth 0-1, rAF-throttled. Also writes --depth on <html>. */
+/** Scroll depth 0-1, rAF-throttled, shared by every caller. */
 export function useScrollDepth(): number {
   return useSyncExternalStore(subscribe, snapshot, snapshot)
 }

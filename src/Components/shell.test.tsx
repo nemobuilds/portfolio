@@ -139,6 +139,19 @@ describe('Layout', () => {
     expect(screen.getByText(`© ${new Date().getFullYear()} John Rogee Turqueza`)).toBeInTheDocument()
   })
 
+  test('pads the page bottom for the phone section bar, so the footer stays above it', () => {
+    wrap(
+      <Layout surface="home">
+        <h1>Hi</h1>
+      </Layout>,
+    )
+    const page = document.querySelector('main#main-content')!.parentElement!
+    expect(page.className).toContain('pb-[calc(44px+env(safe-area-inset-bottom))]')
+    expect(page.className).toContain('min-[760px]:pb-0')
+    expect(page.lastElementChild).toHaveAttribute('aria-label', 'Page sections')
+    expect(document.querySelector('main#main-content')!.className).not.toMatch(/(^|\s)pb-/)
+  })
+
   test('skip link moves focus to the h1', async () => {
     const user = userEvent.setup()
     wrap(
