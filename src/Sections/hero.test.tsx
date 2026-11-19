@@ -21,7 +21,7 @@ describe('waterColor', () => {
 })
 
 describe('waterGradient', () => {
-  const layout = { projects: { top: 700, height: 900 }, experience: 1600, certificates: 2700, contact: 3300, page: 4200 }
+  const layout = { projects: { top: 700, height: 900 }, experience: 1600, certificates: 2700, contact: 3300 }
   const stops = (css: string) => [...css.matchAll(/(#[0-9a-f]{6}) (\d+)px/g)].map((m) => [m[1], Number(m[2])] as const)
 
   test('pins the water to the sections, top to bottom', () => {
@@ -31,7 +31,7 @@ describe('waterGradient', () => {
     expect(s).toContainEqual(['#3557c2', 1600]) // reef where Experience starts, so its pale text reads
     expect(s).toContainEqual(['#0a0e28', 2700]) // deep at Certifications
     expect(s).toContainEqual(['#05080f', 3300]) // abyss at Contact
-    expect(s[s.length - 1]).toEqual(['#05080f', 4200])
+    expect(waterGradient(layout).endsWith('#05080f 100%)')).toBe(true) // ends with the page, never past it
   })
 
   test('stops never go backwards, whatever the screen height', () => {
@@ -84,6 +84,9 @@ describe('HomePage', () => {
     expect(water).toHaveClass('absolute', '-z-10')
     expect(water).not.toHaveClass('fixed')
     expect(water.style.background).toContain('linear-gradient')
+    expect(water).toHaveClass('top-0', 'bottom-0') // spans the page wrapper, no measured height
+    expect(water.style.height).toBe('')
+    expect(water.closest('div.relative')).not.toBeNull() // the Layout wrapper is the positioned box
     expect(document.documentElement.dataset.surface).toBe('home')
   })
 

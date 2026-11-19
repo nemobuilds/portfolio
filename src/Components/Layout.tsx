@@ -54,7 +54,7 @@ export function Layout({ surface, current, backLink, forceTheme, children }: Pro
 
   return (
     // Under 760px the fixed PhoneSectionBar (44px + safe area) covers the page bottom: pad for it.
-    <div className="flex min-h-screen flex-col pb-[calc(44px+env(safe-area-inset-bottom))] min-[760px]:pb-0">
+    <div className="relative flex min-h-screen flex-col pb-[calc(44px+env(safe-area-inset-bottom))] min-[760px]:pb-0">
       <SkipLink />
       <Navbar surface={surface} current={current} backLink={backLink} hideThemeToggle={!!forceTheme} />
       <main id="main-content" className={`flex-1 ${surface === 'sub' ? 'pt-24' : ''}`}>

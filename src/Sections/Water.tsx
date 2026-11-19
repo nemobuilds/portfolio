@@ -22,7 +22,6 @@ export type WaterLayout = {
   experience: number
   certificates: number
   contact: number
-  page: number
 }
 
 const [SURFACE, SHALLOWS, REEF, DEEP, ABYSS] = ['#e9f0f9', '#93b1e6', '#3557c2', '#0a0e28', '#05080f']
@@ -41,14 +40,14 @@ export function waterGradient(l: WaterLayout): string {
     [REEF, l.experience],
     [DEEP, l.certificates],
     [ABYSS, l.contact],
-    [ABYSS, l.page],
   ]
   let last = 0
   const stops = raw.map(([c, y]) => {
     last = Math.max(last, Math.round(y))
     return `${c} ${last}px`
   })
-  return `linear-gradient(180deg, ${stops.join(', ')})`
+  // the layer spans the page wrapper exactly, so the last stop is its bottom edge
+  return `linear-gradient(180deg, ${stops.join(', ')}, ${ABYSS} 100%)`
 }
 
 /** Page-coordinate layout of the home sections; null until they exist. */
@@ -67,7 +66,6 @@ function measure(): WaterLayout | null {
     experience: e,
     certificates: c,
     contact: k,
-    page: document.documentElement.scrollHeight,
   }
 }
 
@@ -109,8 +107,9 @@ export function Water() {
       <div
         data-testid="water"
         aria-hidden="true"
-        className="absolute left-0 right-0 top-0 -z-10 pointer-events-none"
-        style={{ height: layout ? layout.page : '100%', background: layout ? waterGradient(layout) : FALLBACK }}
+        // stretched over the positioned page wrapper (Layout), so it ends with the page, never past it
+        className="absolute inset-x-0 top-0 bottom-0 -z-10 pointer-events-none"
+        style={{ background: layout ? waterGradient(layout) : FALLBACK }}
       />
       <div
         data-testid="water-rays"
