@@ -3,10 +3,10 @@ export const site = {
   brand: 'nemo',
   email: 'jrogeet@gmail.com',
   resumePath: '/John-Rogee-Turqueza-Resume.pdf',
-  avatarPath: '/images/avatar.jpg',
+  avatarPath: '/images/avatar2.jpg',
   social: {
-    github: 'https://github.com/jnrgxx',
+    github: 'https://github.com/nemobuilds',
     linkedin: 'https://www.linkedin.com/in/jrogeet/',
-    instagram: 'https://www.instagram.com/rogee.archive/',
+    instagram: 'https://www.instagram.com/nemo.builds',
   },
 } as const
