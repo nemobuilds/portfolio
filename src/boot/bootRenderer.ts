@@ -14,7 +14,7 @@ import {
 } from './bootBuffers'
 import { BOOT_TIMING, type BootPhase } from './bootProgress'
 
-// Ported from docs/superpowers/specs/reef-logbook-animations/boot-sequence-v7.html
+// Ported from the approved boot-sequence mockup (v7).
 
 export type BootRenderer = {
   setProgress(f: number): void

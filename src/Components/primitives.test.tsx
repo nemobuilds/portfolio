@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
+import { site } from '../content/site'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, test, expect, vi } from 'vitest'
@@ -24,7 +25,7 @@ describe('primitives', () => {
     expect(img).toHaveAttribute('width', '32')
     expect(img).toHaveAttribute('height', '32')
     expect(img).toHaveAttribute('alt', '')
-    expect(img).toHaveAttribute('src', '/images/avatar.jpg')
+    expect(img).toHaveAttribute('src', site.avatarPath)
   })
 
   test('Avatar image and fallback carry the themed ring', () => {
