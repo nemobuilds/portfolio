@@ -24,7 +24,8 @@ function firstBoot(): boolean {
 export default function App() {
   const [booting, setBooting] = useState(firstBoot)
 
-  // index.html paints the boot colour before JS runs (data-boot); drop it once the boot is over.
+  // index.html paints the boot colour before JS runs (data-boot). BootScreen drops it once its
+  // canvas covers the page; this drops it when there is no boot (or the boot is over).
   useLayoutEffect(() => {
     if (!booting) delete document.documentElement.dataset.boot
   }, [booting])

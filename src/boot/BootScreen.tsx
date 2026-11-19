@@ -15,6 +15,9 @@ export function BootScreen({ onDone }: { onDone(): void }) {
     const canvas = canvasRef.current!
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const renderer = createBootRenderer(canvas, { reducedMotion })
+    // The canvas has painted the dark screen, so the boot colour from index.html can go now.
+    // Kept on, it would paint the page black under the wave instead of showing the home page.
+    delete document.documentElement.dataset.boot
     let active = true
 
     const finish = () => {

@@ -83,7 +83,8 @@ describe('BootScreen', () => {
     )
     const heading = await screen.findByRole('heading', { level: 1, name: 'Page not found' })
     expect(heading.closest('[inert]')).not.toBeNull()
-    expect(document.documentElement.dataset.boot).toBe('')
+    // The boot canvas covers the page now, so the boot colour goes: the wave must show the real page.
+    expect(document.documentElement.dataset.boot).toBeUndefined()
     expect(screen.getByRole('status', { name: LABEL })).toBeInTheDocument()
 
     await waitFor(() => expect(renderer.play).toHaveBeenCalled())

@@ -86,6 +86,12 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     H = canvas.clientHeight || window.innerHeight
     canvas.width = Math.round(W * dpr)
     canvas.height = Math.round(H * dpr)
+    // Setting the size clears the canvas. Paint the dark screen at once, so the page never
+    // shows through, and draw a full frame next time.
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.fillStyle = BG
+    ctx.fillRect(0, 0, W, H)
+    lastDraw = -Infinity
     tile = Math.max(10, Math.round(W / 78))
     cols = Math.ceil(W / tile) + 1
     rows = Math.ceil(H / tile) + 1
@@ -380,12 +386,8 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     }
   }
 
-  layout()
+  layout() // also paints the dark screen at once, so the page never flashes under it
   if (ctx) {
-    // Paint the dark screen at once so the page never flashes under it.
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.fillStyle = BG
-    ctx.fillRect(0, 0, W, H)
     window.addEventListener('resize', onResize)
     document.addEventListener('visibilitychange', onVisibility)
     const fonts = document.fonts

@@ -6,11 +6,13 @@ import { createBootRenderer } from './bootRenderer'
 // jsdom has no 2D canvas. This fake context accepts every call and records nothing,
 // which is enough to watch which buffers the renderer makes and when.
 const clears = new WeakMap<HTMLCanvasElement, number>()
+const fills = new WeakMap<HTMLCanvasElement, number>()
 
 function fakeContext(canvas: HTMLCanvasElement) {
   const props: Record<string | symbol, unknown> = {
     canvas,
     clearRect: () => clears.set(canvas, (clears.get(canvas) ?? 0) + 1),
+    fillRect: () => fills.set(canvas, (fills.get(canvas) ?? 0) + 1),
   }
   const metrics = { width: 300, actualBoundingBoxLeft: 150, actualBoundingBoxRight: 150, actualBoundingBoxAscent: 40, actualBoundingBoxDescent: 12 }
   return new Proxy(props, {
@@ -101,6 +103,20 @@ describe('boot renderer frame rate', () => {
     expect(redraws(screen, 20)).toBe(20)
     step(200)
     expect(onDone).toHaveBeenCalledTimes(1)
+    r.destroy()
+  })
+
+  test('a resize repaints the dark screen at once, before the next frame', async () => {
+    const screen = document.createElement('canvas')
+    const r = createBootRenderer(screen, { reducedMotion: false })
+    expect(fills.get(screen)).toBeGreaterThan(0) // dark from the start: the page never shows
+    await Promise.resolve()
+    step(1)
+    const before = fills.get(screen) ?? 0
+    setViewport(1920, 1080)
+    window.dispatchEvent(new Event('resize'))
+    expect(fills.get(screen)).toBe(before + 1)
+    expect(redraws(screen, 1)).toBe(1) // and the next frame is a full draw, never a skipped one
     r.destroy()
   })
 
