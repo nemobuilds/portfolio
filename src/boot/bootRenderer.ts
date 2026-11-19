@@ -1,8 +1,16 @@
-import { ditherPaths } from '../tiles/dither'
-import { clamp, flipState, smoothstep } from '../tiles/flip'
-import { BOOT_PALETTE, paletteAt } from '../tiles/palette'
+import { ditherPaths, LEVELS } from '../tiles/dither'
+import { clamp, smoothstep } from '../tiles/flip'
 import { bootLum, hash2, levelOf } from '../tiles/shimmer'
-import { deviceRect, reuseCanvas, type PixelRect } from './bootBuffers'
+import {
+  atlasCell,
+  atlasSize,
+  bucketColor,
+  deviceRect,
+  HUE_BUCKETS,
+  hueBucket,
+  reuseCanvas,
+  type PixelRect,
+} from './bootBuffers'
 import { BOOT_TIMING, type BootPhase } from './bootProgress'
 
 // Ported from docs/superpowers/specs/reef-logbook-animations/boot-sequence-v7.html
@@ -24,20 +32,6 @@ const UI_FONT = '"Inter Tight Variable", "Inter Tight", system-ui, sans-serif'
 
 const easeIO = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 const easeIn = (t: number) => t * t * t
-
-// The palette walk, sampled once so each tile is a table lookup.
-const LUT_SIZE = 256
-let lut: string[] | undefined
-function paletteLUT(): string[] {
-  if (!lut) {
-    lut = []
-    for (let i = 0; i < LUT_SIZE; i++) {
-      const [r, g, b] = paletteAt(BOOT_PALETTE, i / LUT_SIZE)
-      lut.push(`${r | 0},${g | 0},${b | 0}`)
-    }
-  }
-  return lut
-}
 
 function offscreen(w: number, h: number) {
   const c = document.createElement('canvas')
@@ -65,7 +59,15 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
 
   // layout state
   let W = 0, H = 0, dpr = 1, tile = 10, cols = 0, rows = 0, fontSize = 0
-  let dither: Path2D[] = []
+  // Every (shade level, colour bucket) tile drawn once; tiles are copied from here each frame.
+  let atlas: HTMLCanvasElement | undefined
+  let atlasKey = ''
+  let cell = 10
+  // Atlas source position per sprite, indexed by level * HUE_BUCKETS + bucket.
+  const atlasSX = new Float64Array(LEVELS * HUE_BUCKETS)
+  const atlasSY = new Float64Array(LEVELS * HUE_BUCKETS)
+  // Per-tile values that only change with the layout.
+  let tileH1 = new Float64Array(0), tileH2 = new Float64Array(0), tileDist = new Float64Array(0), tileCalm = new Float64Array(0)
   let nameBox = { w: 0, top: 0, bottom: 0 }
   // Device-pixel box around the name. The letter mask, plate and water buffers cover only this.
   let nameRect: PixelRect = { x: 0, y: 0, w: 1, h: 1 }
@@ -85,7 +87,7 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     tile = Math.max(10, Math.round(W / 78))
     cols = Math.ceil(W / tile) + 1
     rows = Math.ceil(H / tile) + 1
-    dither = ditherPaths(tile)
+    buildAtlas()
 
     // The name: min(12% H, 7.5% W), never wider than 42% of the screen.
     fontSize = Math.min(H * 0.12, W * 0.075)
@@ -129,6 +131,51 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     pc.fillStyle = PLATE
     pc.fillRect(0, 0, r.w, r.h)
     water = reuseCanvas(water, r.w, r.h, offscreen)
+
+    // Calm zone: tiles near the name stay dim so the name reads.
+    const n = cols * rows
+    const cx = W / 2, cy = H / 2
+    const calmW = nameBox.w * 0.62 || 1
+    const calmH = fontSize * 1.5 || 1
+    tileH1 = new Float64Array(n)
+    tileH2 = new Float64Array(n)
+    tileDist = new Float64Array(n)
+    tileCalm = new Float64Array(n)
+    for (let j = 0, q = 0; j < rows; j++)
+      for (let i = 0; i < cols; i++, q++) {
+        const x = i * tile + tile / 2, y = j * tile + tile / 2
+        tileH1[q] = hash2(i, j)
+        tileH2[q] = hash2(j + 7, i + 3)
+        tileDist[q] = Math.hypot(x - cx, y - cy) / tile
+        tileCalm[q] = 0.25 + 0.75 * smoothstep(clamp(Math.hypot((x - cx) / calmW, (y - cy) / calmH) - 0.55, 0, 1))
+      }
+  }
+
+  // One opaque sprite per (level, bucket), at device resolution and centred in its cell
+  // on the same sub-pixel grid as the screen tiles. The tile's alpha is applied with
+  // globalAlpha when it is drawn, so alpha needs no buckets.
+  function buildAtlas() {
+    cell = Math.max(1, Math.round(tile * dpr))
+    const key = `${tile}@${dpr}`
+    if (atlas && atlasKey === key) return
+    const size = atlasSize(LEVELS, cell)
+    atlas = reuseCanvas(atlas, size.w, size.h, offscreen)
+    atlasKey = key
+    const a = atlas.getContext('2d')!
+    a.setTransform(1, 0, 0, 1, 0, 0)
+    a.clearRect(0, 0, size.w, size.h)
+    const paths = ditherPaths(tile)
+    const s = cell / tile
+    for (let b = 0; b < HUE_BUCKETS; b++) {
+      a.fillStyle = bucketColor(b)
+      for (let l = 0; l < LEVELS; l++) {
+        const { sx, sy } = atlasCell(l, b, cell)
+        atlasSX[l * HUE_BUCKETS + b] = sx
+        atlasSY[l * HUE_BUCKETS + b] = sy
+        a.setTransform(s, 0, 0, s, sx + cell / 2, sy + cell / 2)
+        a.fill(paths[l])
+      }
+    }
   }
 
   // White water inside the letters, under a gently moving surface.
@@ -173,32 +220,37 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     const rcx = cx + Math.cos(tt * 0.3) * W * 0.12
     const rcy = cy + Math.sin(tt * 0.41) * H * 0.1
     const dim = phase === 'wave' ? 0.85 : 0.6
-    const pal = paletteLUT()
-    const calmW = nameBox.w * 0.62 || 1
-    const calmH = fontSize * 1.5 || 1
-    for (let j = 0; j < rows; j++)
-      for (let i = 0; i < cols; i++) {
+    const flipping = phase === 'wave' || phase === 'done'
+    const img = atlas!
+    c.fillStyle = BG
+    // Before the wave no tile has flipped, so the tile backs are one rectangle.
+    if (!flipping) c.fillRect(0, 0, cols * tile, rows * tile)
+    for (let j = 0, q = 0; j < rows; j++)
+      for (let i = 0; i < cols; i++, q++) {
         const x = i * tile + tile / 2, y = j * tile + tile / 2
-        const h1 = hash2(i, j), h2 = hash2(j + 7, i + 3)
-        const dist = Math.hypot(x - cx, y - cy) / tile
-        const { k, squash, turn } = flipState(dist, front, h1 * 1.6, 2.2)
-        if (k >= 1) continue // flipped: transparent, the home page shows
+        const h1 = tileH1[q], h2 = tileH2[q]
+        let squash = 1, turn = 0
+        if (flipping) {
+          // flipState(), inlined: no object per tile.
+          const k = clamp((front - tileDist[q] - h1 * 1.6) / 2.2, 0, 1)
+          if (k >= 1) continue // flipped: transparent, the home page shows
+          const flip = smoothstep(k) * Math.PI
+          squash = Math.abs(Math.cos(flip))
+          turn = Math.sin(flip)
+          c.globalAlpha = 1
+          c.fillRect(x - tile / 2, y - tile / 2, tile, tile)
+        }
         const rip = Math.sin((Math.hypot(x - rcx, y - rcy) / tile) * 0.55 - tt * 1.2) * 0.5 + 0.5
         const hue = h2 * 0.35 + rip * 0.45 + tt * 0.04
-        const rgb = pal[Math.floor((((hue % 1) + 1) % 1) * LUT_SIZE) % LUT_SIZE]
-        // Calm zone: tiles near the name stay dim so the name reads.
-        const calm = 0.25 + 0.75 * smoothstep(clamp(Math.hypot((x - cx) / calmW, (y - cy) / calmH) - 0.55, 0, 1))
         const twinkle = h2 > 0.985 ? 0.5 * (0.5 + 0.5 * Math.sin(tt * 6 + h1 * 40)) : 0
-        const lum = clamp(bootLum(rip, h1, calm, dim, turn) + twinkle, 0, 1)
-        c.fillStyle = BG
-        c.fillRect(x - tile / 2, y - tile / 2, tile, tile)
-        c.save()
-        c.translate(x, y)
-        c.scale(Math.max(squash, 0.04), 1)
-        c.fillStyle = `rgba(${rgb},${0.45 + 0.55 * lum})`
-        c.fill(dither[levelOf(lum)])
-        c.restore()
+        const lum = clamp(bootLum(rip, h1, tileCalm[q], dim, turn) + twinkle, 0, 1)
+        const s = levelOf(lum) * HUE_BUCKETS + hueBucket(hue)
+        // A flipping tile keeps its horizontal squash through a narrower destination.
+        const dw = squash >= 1 ? tile : tile * Math.max(squash, 0.04)
+        c.globalAlpha = 0.45 + 0.55 * lum
+        c.drawImage(img, atlasSX[s], atlasSY[s], cell, cell, x - dw / 2, y - tile / 2, dw, tile)
       }
+    c.globalAlpha = 1
   }
 
   function drawName(c: CanvasRenderingContext2D, scale: number, alpha: number, lvl: number, t: number, subAlpha: number) {

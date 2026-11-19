@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { deviceRect, reuseCanvas } from './bootBuffers'
+import { BOOT_PALETTE, paletteAt } from '../tiles/palette'
+import { atlasCell, atlasSize, bucketColor, deviceRect, HUE_BUCKETS, hueBucket, reuseCanvas } from './bootBuffers'
 import { createBootRenderer } from './bootRenderer'
 
 // jsdom has no 2D canvas. This fake context accepts every call and records nothing,
@@ -88,13 +89,13 @@ describe('boot renderer buffers', () => {
     r.destroy()
   })
 
-  test('the name buffers are name-sized, not viewport-sized', async () => {
+  test('the name buffers and the tile atlas are far smaller than the viewport', async () => {
     const r = createBootRenderer(document.createElement('canvas'), { reducedMotion: false })
     await Promise.resolve()
     step(2)
     const buffers = made.slice(1) // made[0] is the screen canvas from the test
-    expect(buffers.length).toBeGreaterThan(0)
-    for (const c of buffers) expect(c.width * c.height).toBeLessThan(1440 * 900 / 4)
+    expect(buffers.length).toBe(4) // atlas, letter mask, plate, water
+    for (const c of buffers) expect(c.width * c.height).toBeLessThan((1440 * 900) / 4)
     r.destroy()
   })
 })
@@ -106,6 +107,41 @@ describe('buffer helpers', () => {
     expect(reuseCanvas(a, 10, 20, create)).toBe(a)
     expect(reuseCanvas(a, 11, 20, create)).not.toBe(a)
     expect(create).toHaveBeenCalledTimes(2)
+  })
+
+  test('hueBucket wraps like the palette walk and stays in range', () => {
+    expect(hueBucket(0)).toBe(0)
+    expect(hueBucket(1)).toBe(0)
+    expect(hueBucket(-0.25)).toBe(hueBucket(0.75))
+    expect(hueBucket(0.999999)).toBe(HUE_BUCKETS - 1)
+    expect(hueBucket(2.5)).toBe(HUE_BUCKETS / 2)
+  })
+
+  test('each bucket colour sits between the two old 256-step table entries it replaces', () => {
+    for (const b of [0, 17, 64, HUE_BUCKETS - 1]) {
+      const [r] = bucketColor(b).match(/\d+/g)!.map(Number)
+      const a = paletteAt(BOOT_PALETTE, (2 * b) / 256)[0] | 0
+      const c = paletteAt(BOOT_PALETTE, (2 * b + 1) / 256)[0] | 0
+      expect(r).toBeGreaterThanOrEqual(Math.min(a, c))
+      expect(r).toBeLessThanOrEqual(Math.max(a, c))
+    }
+    expect(bucketColor(0)).toMatch(/^rgb\(\d+,\d+,\d+\)$/)
+  })
+
+  test('atlas cells never overlap and fit the atlas', () => {
+    const cell = 66
+    const size = atlasSize(5, cell)
+    const seen = new Set<string>()
+    for (let l = 0; l < 5; l++)
+      for (let b = 0; b < HUE_BUCKETS; b++) {
+        const { sx, sy } = atlasCell(l, b, cell)
+        seen.add(`${sx},${sy}`)
+        expect(sx + cell).toBeLessThanOrEqual(size.w)
+        expect(sy + cell).toBeLessThanOrEqual(size.h)
+      }
+    expect(seen.size).toBe(5 * HUE_BUCKETS)
+    // a 5K-wide screen at DPR 2 still fits the 16384 px canvas limit
+    expect(Math.max(atlasSize(5, 132).w, atlasSize(5, 132).h)).toBeLessThanOrEqual(16384)
   })
 
   test('deviceRect grows by the margin and snaps outward to whole device pixels', () => {
