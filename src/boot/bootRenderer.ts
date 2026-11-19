@@ -2,6 +2,7 @@ import { ditherPaths } from '../tiles/dither'
 import { clamp, flipState, smoothstep } from '../tiles/flip'
 import { BOOT_PALETTE, paletteAt } from '../tiles/palette'
 import { bootLum, hash2, levelOf } from '../tiles/shimmer'
+import { deviceRect, reuseCanvas, type PixelRect } from './bootBuffers'
 import { BOOT_TIMING, type BootPhase } from './bootProgress'
 
 // Ported from docs/superpowers/specs/reef-logbook-animations/boot-sequence-v7.html
@@ -66,6 +67,8 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
   let W = 0, H = 0, dpr = 1, tile = 10, cols = 0, rows = 0, fontSize = 0
   let dither: Path2D[] = []
   let nameBox = { w: 0, top: 0, bottom: 0 }
+  // Device-pixel box around the name. The letter mask, plate and water buffers cover only this.
+  let nameRect: PixelRect = { x: 0, y: 0, w: 1, h: 1 }
   let glyph: HTMLCanvasElement | undefined
   let plate: HTMLCanvasElement | undefined
   let water: HTMLCanvasElement | undefined
@@ -87,6 +90,7 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     // The name: min(12% H, 7.5% W), never wider than 42% of the screen.
     fontSize = Math.min(H * 0.12, W * 0.075)
     ctx.font = nameFont()
+    ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     let mm = ctx.measureText(NAME)
     if (mm.width > W * 0.42) {
@@ -97,39 +101,57 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     const ny = H / 2 - fontSize * 0.08
     nameBox = { w: mm.width, top: ny - mm.actualBoundingBoxAscent, bottom: ny + mm.actualBoundingBoxDescent }
 
-    // Offscreen letter mask, the slate plate cut from it, and a buffer for the water.
-    glyph = offscreen(canvas.width, canvas.height)
+    const r = deviceRect(
+      { left: W / 2 - mm.actualBoundingBoxLeft, right: W / 2 + mm.actualBoundingBoxRight, top: nameBox.top, bottom: nameBox.bottom },
+      4 + fontSize * 0.1,
+      dpr,
+    )
+    nameRect = r
+
+    // Name-sized letter mask, the slate plate cut from it, and the water buffer.
+    // Each is made once and again only when the name box changes size.
+    glyph = reuseCanvas(glyph, r.w, r.h, offscreen)
     const g = glyph.getContext('2d')!
-    g.scale(dpr, dpr)
+    g.setTransform(1, 0, 0, 1, 0, 0)
+    g.clearRect(0, 0, r.w, r.h)
+    g.setTransform(dpr, 0, 0, dpr, -r.x, -r.y)
     g.font = nameFont()
     g.textAlign = 'center'
     g.textBaseline = 'middle'
     g.fillStyle = '#fff'
     g.fillText(NAME, W / 2, ny)
-    plate = offscreen(canvas.width, canvas.height)
+    plate = reuseCanvas(plate, r.w, r.h, offscreen)
     const pc = plate.getContext('2d')!
+    pc.globalCompositeOperation = 'source-over'
+    pc.clearRect(0, 0, r.w, r.h)
     pc.drawImage(glyph, 0, 0)
     pc.globalCompositeOperation = 'source-in'
     pc.fillStyle = PLATE
-    pc.fillRect(0, 0, plate.width, plate.height)
-    water = offscreen(canvas.width, canvas.height)
+    pc.fillRect(0, 0, r.w, r.h)
+    water = reuseCanvas(water, r.w, r.h, offscreen)
   }
 
   // White water inside the letters, under a gently moving surface.
   function drawWater(lvl: number, t: number) {
+    const r = nameRect
     const w = water!.getContext('2d')!
     w.setTransform(1, 0, 0, 1, 0, 0)
     w.globalCompositeOperation = 'source-over'
-    w.clearRect(0, 0, water!.width, water!.height)
-    w.setTransform(dpr, 0, 0, dpr, 0, 0)
+    w.clearRect(0, 0, r.w, r.h)
+    w.setTransform(dpr, 0, 0, dpr, -r.x, -r.y)
     const span = nameBox.bottom - nameBox.top + fontSize * 0.2
     const base = nameBox.bottom + fontSize * 0.1 - lvl * (span + 6)
     const amp = still ? 0 : lvl < 1 ? fontSize * 0.035 : fontSize * 0.012
+    // Only the surface samples over the buffer. They are the same points as a
+    // full-width surface (every 4 px from 0), so the shape is the same.
+    const last = Math.floor((W + 4) / 4) * 4
+    const x0 = Math.max(0, Math.floor(r.x / dpr / 4) * 4 - 4)
+    const x1 = Math.min(last, Math.ceil((r.x + r.w) / dpr / 4) * 4 + 4)
     w.beginPath()
-    w.moveTo(0, H)
-    for (let x = 0; x <= W + 4; x += 4)
+    w.moveTo(x0, H)
+    for (let x = x0; x <= x1; x += 4)
       w.lineTo(x, base + Math.sin(x * 0.035 + t * 0.004) * amp + Math.sin(x * 0.011 - t * 0.0023) * amp)
-    w.lineTo(W + 4, H)
+    w.lineTo(x1, H)
     w.closePath()
     const grad = w.createLinearGradient(0, base, 0, nameBox.bottom + 10)
     grad.addColorStop(0, '#FFFFFF')
@@ -186,8 +208,9 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     c.translate(W / 2, H / 2)
     c.scale(scale, scale)
     c.translate(-W / 2, -H / 2)
-    c.drawImage(plate, 0, 0, W, H)
-    c.drawImage(drawWater(lvl, t), 0, 0, W, H)
+    const r = nameRect
+    c.drawImage(plate, r.x / dpr, r.y / dpr, r.w / dpr, r.h / dpr)
+    c.drawImage(drawWater(lvl, t), r.x / dpr, r.y / dpr, r.w / dpr, r.h / dpr)
     // "aka" small, "nemo" larger, on one baseline, centred as a pair, close under the name.
     c.fillStyle = `rgba(195,199,210,${subAlpha})`
     const akaF = `italic 400 ${Math.max(11, fontSize * 0.19)}px ${SERIF_FONT}`
