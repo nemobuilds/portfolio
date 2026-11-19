@@ -328,7 +328,8 @@ body {
   background: var(--accent);
   border-color: #17161C;
 }
-@media (max-width: 759px) { .depth-gauge { display: none; } }
+/* the gauge sits to the right of the 1200px content; below 1280px it would cover it */
+@media (max-width: 1279px) { .depth-gauge { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .depth-gauge, .depth-gauge__name { transition: none; }
 }

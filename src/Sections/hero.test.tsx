@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, test, expect } from 'vitest'
 import Hero from './Hero'
-import { waterColor } from './Water'
+import { waterColor, waterGradient } from './Water'
 import HomePage from '../Pages/HomePage'
 import { ThemeProvider } from '../theme/ThemeProvider'
 
@@ -17,6 +17,26 @@ describe('waterColor', () => {
   test('clamps and mixes', () => {
     expect(waterColor(2)).toBe('#05080f')
     expect(waterColor(0.125)).not.toBe('#e9f0f9')
+  })
+})
+
+describe('waterGradient', () => {
+  const layout = { projects: { top: 700, height: 900 }, experience: 1600, certificates: 2700, contact: 3300, page: 4200 }
+  const stops = (css: string) => [...css.matchAll(/(#[0-9a-f]{6}) (\d+)px/g)].map((m) => [m[1], Number(m[2])] as const)
+
+  test('pins the water to the sections, top to bottom', () => {
+    const s = stops(waterGradient(layout))
+    expect(s[0]).toEqual(['#e9f0f9', 0])
+    expect(s).toContainEqual(['#e9f0f9', 700]) // surface through the hero, to the projects top
+    expect(s).toContainEqual(['#3557c2', 1600]) // reef where Experience starts, so its pale text reads
+    expect(s).toContainEqual(['#0a0e28', 2700]) // deep at Certifications
+    expect(s).toContainEqual(['#05080f', 3300]) // abyss at Contact
+    expect(s[s.length - 1]).toEqual(['#05080f', 4200])
+  })
+
+  test('stops never go backwards, whatever the screen height', () => {
+    const s = stops(waterGradient({ ...layout, projects: { top: 700, height: 60 }, experience: 720 }))
+    for (let i = 1; i < s.length; i++) expect(s[i][1]).toBeGreaterThanOrEqual(s[i - 1][1])
   })
 })
 
@@ -59,8 +79,11 @@ describe('HomePage', () => {
     for (const id of ['top', 'projects', 'experience', 'certificates', 'contact']) {
       expect(container.querySelector(`#${id}`)).not.toBeNull()
     }
+    // the water runs the length of the page (absolute), not one fixed screen colour
     const water = screen.getByTestId('water')
-    expect(water).toHaveClass('fixed', '-z-10')
+    expect(water).toHaveClass('absolute', '-z-10')
+    expect(water).not.toHaveClass('fixed')
+    expect(water.style.background).toContain('linear-gradient')
     expect(document.documentElement.dataset.surface).toBe('home')
   })
 

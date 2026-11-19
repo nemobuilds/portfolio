@@ -128,3 +128,10 @@ describe('HomeCertifications', () => {
     expect(screen.queryByText(/Screenshot here|\[Month YYYY\]/)).toBeNull()
   })
 })
+
+test('the depth gauge hides below 1280px, where it would cover the content', async () => {
+  const { readFileSync } = await import('node:fs')
+  const { resolve } = await import('node:path')
+  const css = readFileSync(resolve(import.meta.dirname, '../index.css'), 'utf8')
+  expect(css).toMatch(/@media \(max-width: 1279px\) \{ \.depth-gauge \{ display: none; \} \}/)
+})
