@@ -33,6 +33,14 @@ export function atlasSize(levels: number, cell: number): { w: number; h: number 
   return { w: ATLAS_COLS * cell, h: levels * ROWS_PER_LEVEL * cell }
 }
 
+/** The background shimmer redraws at about 30 fps. The drop and the wave draw every frame. */
+export const SHIMMER_FRAME_MS = 1000 / 30
+
+/** True when a shimmer-only frame is due. The 4 ms slack keeps a 60 Hz screen at every second frame despite jitter. */
+export function shimmerDue(now: number, lastDraw: number): boolean {
+  return now - lastDraw >= SHIMMER_FRAME_MS - 4
+}
+
 /** Keeps a canvas when its size still fits; makes a new one only when the size changes. */
 export function reuseCanvas<C extends { width: number; height: number }>(
   prev: C | undefined,

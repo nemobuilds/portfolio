@@ -9,6 +9,7 @@ import {
   HUE_BUCKETS,
   hueBucket,
   reuseCanvas,
+  shimmerDue,
   type PixelRect,
 } from './bootBuffers'
 import { BOOT_TIMING, type BootPhase } from './bootProgress'
@@ -52,6 +53,7 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
   let onDone: (() => void) | undefined
   let raf = 0
   let lastNow = 0
+  let lastDraw = -Infinity
   let fontsReady = false
   let nameStart = 0
   let destroyed = false
@@ -329,6 +331,14 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
       }
     }
 
+    // Fill and hold are only the slow shimmer and the rising water: draw them at about
+    // 30 fps. The state above still steps every frame, and the drop and wave draw every frame.
+    if ((phase === 'fill' || phase === 'hold') && !shimmerDue(now, lastDraw)) {
+      raf = requestAnimationFrame(frame)
+      return
+    }
+    lastDraw = now
+
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, W, H)
     drawTiles(ctx, p, now)
@@ -358,6 +368,18 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     if (still) drawStill()
   }
 
+  // Hidden tab: no frames at all. Back in view: carry on from where it was.
+  const onVisibility = () => {
+    if (still || destroyed || phase === 'done') return
+    if (document.hidden) {
+      cancelAnimationFrame(raf)
+      raf = 0
+    } else if (!raf) {
+      lastNow = 0
+      raf = requestAnimationFrame(frame)
+    }
+  }
+
   layout()
   if (ctx) {
     // Paint the dark screen at once so the page never flashes under it.
@@ -365,6 +387,7 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
     ctx.fillStyle = BG
     ctx.fillRect(0, 0, W, H)
     window.addEventListener('resize', onResize)
+    document.addEventListener('visibilitychange', onVisibility)
     const fonts = document.fonts
     Promise.resolve(fonts?.load('400 40px "Talina"')).catch(() => []).then(() => {
       if (destroyed) return
@@ -373,7 +396,7 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
       if (still) drawStill()
     })
     if (still) drawStill()
-    else raf = requestAnimationFrame(frame)
+    else if (!document.hidden) raf = requestAnimationFrame(frame)
   }
 
   return {
@@ -402,6 +425,7 @@ export function createBootRenderer(canvas: HTMLCanvasElement, opts: { reducedMot
       cancelAnimationFrame(raf)
       clearTimeout(fadeTimer)
       window.removeEventListener('resize', onResize)
+      document.removeEventListener('visibilitychange', onVisibility)
       onDone = undefined
     },
   }
