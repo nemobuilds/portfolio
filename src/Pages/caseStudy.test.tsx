@@ -7,7 +7,7 @@ import CaseStudyPage, { CaseStudyView } from './CaseStudyPage'
 import { ProjectLinks } from '../Components/ProjectLinks'
 import { FactsRail } from '../Components/FactsRail'
 import { Gallery } from '../Components/Gallery'
-import { getProject, nextProject } from '../content/projects'
+import { getProject, nextProject, projects } from '../content/projects'
 import type { Project } from '../content/projects'
 
 const base = getProject('zealia')!
@@ -70,7 +70,13 @@ describe('FactsRail', () => {
     render(<FactsRail project={full} />)
     expect(screen.getByText('Solo build')).toBeInTheDocument()
     expect(screen.getByText('2025 to present')).toBeInTheDocument()
-    expect(screen.getByText('Side project')).toBeInTheDocument()
+  })
+
+  test('Type shows the Focus categories, with the Origin categories under them', () => {
+    render(<FactsRail project={{ ...base, categories: ['Backend & APIs', 'Full-Stack Applications', 'Open Source', 'Developer Tools'] }} />)
+    expect(screen.getByText('Full-Stack Applications · Backend & APIs')).toBeInTheDocument()
+    expect(screen.getByText('Open Source')).toBeInTheDocument()
+    expect(screen.queryByText(/Developer Tools/)).toBeNull()
   })
 })
 
@@ -147,24 +153,28 @@ describe('CaseStudyPage route', () => {
     expect(screen.getByRole('heading', { name: 'Project not found' })).toBeInTheDocument()
   })
 
+  // Content-agnostic: the first and last projects by `order`, whatever they are today.
+  const first = () => projects[0]
+  const lastSlug = () => projects.at(-1)!.slug
+
   test('known slug renders the project', () => {
-    route('/projects/tachyon')
-    expect(screen.getByRole('heading', { level: 1, name: getProject('tachyon')!.name })).toBeInTheDocument()
+    route(`/projects/${base.slug}`)
+    expect(screen.getByRole('heading', { level: 1, name: base.name })).toBeInTheDocument()
   })
 
-  test('next project from AMBITION is Tachyon and is linked', () => {
-    expect(nextProject('ambition').slug).toBe('tachyon')
-    route('/projects/ambition')
+  test('next project from the last one wraps to the first and is linked', () => {
+    expect(nextProject(lastSlug()).slug).toBe(first().slug)
+    route(`/projects/${lastSlug()}`)
     const link = screen.getByRole('link', { name: /Next project:/ })
-    expect(link).toHaveAttribute('href', '/projects/tachyon')
-    expect(link).toHaveTextContent(getProject('tachyon')!.name)
+    expect(link).toHaveAttribute('href', `/projects/${first().slug}`)
+    expect(link).toHaveTextContent(first().name)
   })
 
   test('Next project remounts the view, so per-project state starts fresh', async () => {
-    route('/projects/ambition')
+    route(`/projects/${lastSlug()}`)
     const before = screen.getByRole('heading', { level: 1 })
     await userEvent.click(screen.getByRole('link', { name: /Next project:/ }))
-    const after = screen.getByRole('heading', { level: 1, name: getProject('tachyon')!.name })
+    const after = screen.getByRole('heading', { level: 1, name: first().name })
     expect(after).not.toBe(before)
   })
 })

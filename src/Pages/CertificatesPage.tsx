@@ -1,19 +1,24 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../Components/Layout'
-import CertificateCard from '../Components/CertificateCard'
+import CertificateCard, { issuerLine } from '../Components/CertificateCard'
 import { CertificateDialog } from '../Components/CertificateDialog'
-import { FilterButtons } from '../Components/FilterButtons'
+import { FilterLayout, SearchBox } from '../Components/Filters'
 import NotFoundPage from './NotFoundPage'
-import { CERT_CATEGORIES, certificates, getCertificate } from '../content/certifications'
+import { CERT_FACETS, certificates, getCertificate, type Certificate } from '../content/certifications'
 import { countWord } from '../content/count'
+import { facetViews, filterItems, pickedList, type Accessors } from '../filter/filter'
+import { useFilterParams } from '../filter/useFilterParams'
 
 const SITE = 'John Rogee Turqueza'
-const ALL = 'All'
+
+const access: Accessors<Certificate> = {
+  text: (c) => [c.name, c.shortName ?? '', issuerLine(c)].join(' '),
+  categories: (c) => c.categories,
+}
 
 export default function CertificatesPage() {
   const { id } = useParams()
-  const [params] = useSearchParams()
   const navigate = useNavigate()
   const location = useLocation()
   const fromList = !!(location.state as { fromList?: boolean } | null)?.fromList
@@ -22,6 +27,7 @@ export default function CertificatesPage() {
   const openedFromCard = useRef(false)
   const heading = useRef<HTMLHeadingElement>(null)
   const lastId = useRef<string | undefined>(id)
+  const { state, setQuery, toggle, clearAll } = useFilterParams(CERT_FACETS)
 
   useEffect(() => {
     if (missing) return
@@ -49,48 +55,51 @@ export default function CertificatesPage() {
   if (missing) return <NotFoundPage />
 
   const index = certificate ? certificates.indexOf(certificate) : -1
-
-  // Fixed order from CERT_CATEGORIES; empty categories get no button.
-  const categories: string[] = CERT_CATEGORIES.filter((c) => certificates.some((x) => x.category === c))
-  const options = [
-    { label: ALL, count: certificates.length },
-    ...categories.map((c) => ({ label: c, count: certificates.filter((x) => x.category === c).length })),
-  ]
-  const wanted = params.get('category')
-  const selected = wanted && categories.includes(wanted) ? wanted : ALL
-  const shown = selected === ALL ? certificates : certificates.filter((x) => x.category === selected)
-  const select = (label: string) => {
-    navigate({ search: label === ALL ? '' : `?category=${encodeURIComponent(label)}` }, { replace: true })
-  }
+  const shown = filterItems(certificates, state, CERT_FACETS, access)
 
   return (
     <Layout surface="sub" current="certifications">
       <div className="mx-auto w-full max-w-[1200px] px-6">
-        <section className="flex flex-col gap-3.5 pt-12 pb-9">
-          <h1
-            ref={heading}
-            tabIndex={-1}
-            className="m-0 text-[clamp(44px,5.5vw,68px)] font-bold leading-none tracking-[-0.035em] text-[var(--text)]"
-          >
-            Certifications
-          </h1>
-          <p className="m-0 text-[16px] text-[var(--text-secondary)] min-[760px]:text-[18px]">
-            {countWord(certificates.length)} certifications. Each one links to its issuer.
-          </p>
-          <FilterButtons options={options} selected={selected} onSelect={select} label="Filter certifications" />
+        <section className="flex flex-wrap items-end justify-between gap-x-8 gap-y-5 pt-12 pb-9">
+          <div className="flex flex-col gap-3.5">
+            <h1
+              ref={heading}
+              tabIndex={-1}
+              className="m-0 text-[clamp(44px,5.5vw,68px)] font-bold leading-none tracking-[-0.035em] text-[var(--text)]"
+            >
+              Certifications
+            </h1>
+            <p className="m-0 text-[16px] text-[var(--text-secondary)] min-[760px]:text-[18px]">
+              {countWord(certificates.length)} certifications. Each one links to its issuer.
+            </p>
+          </div>
+          <SearchBox label="Search certifications" placeholder="Search by name or issuer" value={state.q} onChange={setQuery} />
         </section>
-        <section
+        <div
           className="pb-[88px]"
           onClickCapture={(e) => {
             if ((e.target as HTMLElement).closest('[data-cert-id]')) openedFromCard.current = true
           }}
         >
-          <div className="grid grid-cols-1 items-stretch gap-x-7 gap-y-10 min-[760px]:grid-cols-2 min-[1100px]:grid-cols-3">
-            {shown.map((c) => (
-              <CertificateCard key={c.id} certificate={c} />
-            ))}
-          </div>
-        </section>
+          <FilterLayout
+            noun="certifications"
+            singular="certification"
+            views={facetViews(certificates, state, CERT_FACETS, access)}
+            state={state}
+            picked={pickedList(state, CERT_FACETS)}
+            total={certificates.length}
+            shown={shown.length}
+            onToggle={toggle}
+            onClearSearch={() => setQuery('')}
+            onClearAll={clearAll}
+          >
+            <div className="grid grid-cols-1 items-stretch gap-x-7 gap-y-10 min-[640px]:grid-cols-2">
+              {shown.map((c) => (
+                <CertificateCard key={c.id} certificate={c} />
+              ))}
+            </div>
+          </FilterLayout>
+        </div>
       </div>
       {certificate && (
         <CertificateDialog

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Project } from '../content/projects'
+import { categoriesIn } from '../content/types'
 import { Icon } from './Icon'
 import { StackList } from './StackList'
 
@@ -17,7 +18,9 @@ const linkCls =
 const shortUrl = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/$/, '')
 
 export function FactsRail({ project }: { project: Project }) {
-  const { category, role, period, stack, repoUrl, liveUrl, isPrivate, extraLinks } = project
+  const { categories, role, period, stack, repoUrl, liveUrl, isPrivate, extraLinks } = project
+  const focus = categoriesIn('focus', categories)
+  const origin = categoriesIn('origin', categories)
   const hasLinks = !!repoUrl || !!liveUrl || isPrivate || extraLinks.length > 0
   return (
     <aside
@@ -25,8 +28,8 @@ export function FactsRail({ project }: { project: Project }) {
       className="surface-slate flex flex-col rounded-[10px] p-[26px] shadow-[0_26px_36px_-18px_rgba(8,14,50,0.45)] min-[900px]:sticky min-[900px]:top-6"
     >
       <Fact label="Type">
-        <b className="text-[17px] font-semibold leading-snug">{category}</b>
-        <span className="text-[15px] text-[var(--text-secondary)]">Side project</span>
+        <b className="text-[17px] font-semibold leading-snug">{(focus.length ? focus : categories).join(' · ')}</b>
+        {origin.length > 0 && <span className="text-[15px] text-[var(--text-secondary)]">{origin.join(' · ')}</span>}
       </Fact>
       {role && (
         <Fact label="Role">

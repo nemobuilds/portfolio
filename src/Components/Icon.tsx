@@ -3,7 +3,7 @@ import type { SVGProps } from 'react'
 export type IconName =
   | 'arrow' | 'arrow-left' | 'external' | 'download' | 'github' | 'linkedin'
   | 'instagram' | 'sun' | 'moon' | 'menu' | 'close' | 'lock' | 'award'
-  | 'chain' | 'code' | 'mail'
+  | 'chain' | 'code' | 'mail' | 'search' | 'filter'
 
 const paths: Record<IconName, string> = {
   arrow: 'M5 12h14M13 6l6 6-6 6',
@@ -26,6 +26,8 @@ const paths: Record<IconName, string> = {
     'M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7',
   code: 'M16 18l6-6-6-6M8 6l-6 6 6 6',
   mail: 'M3 5h18v14H3zM3 7l9 7 9-7',
+  search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-3.5-3.5',
+  filter: 'M4 6h16M7 12h10M10 18h4',
 }
 
 type Props = { name: IconName; size?: number } & Omit<SVGProps<SVGSVGElement>, 'name'>

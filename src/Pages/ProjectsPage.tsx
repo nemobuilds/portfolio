@@ -1,60 +1,61 @@
 import { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Layout } from '../Components/Layout'
-import { FilterButtons } from '../Components/FilterButtons'
+import { FilterLayout, SearchBox } from '../Components/Filters'
 import ProjectCard from '../Components/ProjectCard'
-import { EmptyState } from '../Components/EmptyState'
 import { countWord } from '../content/count'
-import { projects } from '../content/projects'
-import { CATEGORIES } from '../content/types'
+import { projects, type Project } from '../content/projects'
+import { PROJECT_FACETS } from '../content/types'
+import { facetViews, filterItems, pickedList, type Accessors } from '../filter/filter'
+import { useFilterParams } from '../filter/useFilterParams'
 
-const ALL = 'All'
+const access: Accessors<Project> = {
+  text: (p) => [p.name, p.summary, p.description ?? '', p.stack.join(' ')].join(' '),
+  categories: (p) => p.categories,
+}
 
 export default function ProjectsPage() {
-  const [params] = useSearchParams()
-  const navigate = useNavigate()
+  const { state, setQuery, toggle, clearAll } = useFilterParams(PROJECT_FACETS)
 
   useEffect(() => {
     document.title = 'Projects · John Rogee Turqueza'
   }, [])
 
-  // Fixed order from CATEGORIES; empty categories get no button.
-  const categories: string[] = CATEGORIES.filter((c) => projects.some((p) => p.category === c))
-  const options = [
-    { label: ALL, count: projects.length },
-    ...categories.map((c) => ({ label: c, count: projects.filter((p) => p.category === c).length })),
-  ]
-  const wanted = params.get('category')
-  const selected = wanted && categories.includes(wanted) ? wanted : ALL
-  const shown = selected === ALL ? projects : projects.filter((p) => p.category === selected)
-
-  const select = (label: string) => {
-    navigate({ search: label === ALL ? '' : `?category=${encodeURIComponent(label)}` }, { replace: true })
-  }
+  const shown = filterItems(projects, state, PROJECT_FACETS, access)
 
   return (
     <Layout surface="sub" current="projects">
       <div className="mx-auto w-full max-w-[1200px] px-6">
-        <section className="flex flex-col gap-[18px] pt-12 pb-9">
-          <h1 className="m-0 text-[clamp(48px,6vw,80px)] font-extrabold leading-[0.95] tracking-[-0.045em] text-[var(--text)]">
-            Projects
-          </h1>
-          <p className="m-0 text-[16px] text-[var(--text-secondary)] min-[760px]:text-[18px]">
-            {countWord(projects.length)} projects. Each one opens a case study.
-          </p>
-          <FilterButtons options={options} selected={selected} onSelect={select} />
+        <section className="flex flex-wrap items-end justify-between gap-x-8 gap-y-5 pt-12 pb-9">
+          <div className="flex flex-col gap-[18px]">
+            <h1 className="m-0 text-[clamp(48px,6vw,80px)] font-extrabold leading-[0.95] tracking-[-0.045em] text-[var(--text)]">
+              Projects
+            </h1>
+            <p className="m-0 text-[16px] text-[var(--text-secondary)] min-[760px]:text-[18px]">
+              {countWord(projects.length)} projects. Each one opens a case study.
+            </p>
+          </div>
+          <SearchBox label="Search projects" placeholder="Search by name, summary or tech" value={state.q} onChange={setQuery} />
         </section>
-        <section className="pb-[88px]">
-          {shown.length === 0 ? (
-            <EmptyState message="No projects in this category yet." action={{ label: 'Show all projects', onClick: () => select(ALL) }} />
-          ) : (
-            <div className="grid grid-cols-1 gap-6 min-[760px]:grid-cols-2 min-[1100px]:grid-cols-3">
+        <div className="pb-[88px]">
+          <FilterLayout
+            noun="projects"
+            singular="project"
+            views={facetViews(projects, state, PROJECT_FACETS, access)}
+            state={state}
+            picked={pickedList(state, PROJECT_FACETS)}
+            total={projects.length}
+            shown={shown.length}
+            onToggle={toggle}
+            onClearSearch={() => setQuery('')}
+            onClearAll={clearAll}
+          >
+            <div className="grid grid-cols-1 gap-6 min-[640px]:grid-cols-2">
               {shown.map((p) => (
                 <ProjectCard key={p.slug} project={p} />
               ))}
             </div>
-          )}
-        </section>
+          </FilterLayout>
+        </div>
       </div>
     </Layout>
   )
