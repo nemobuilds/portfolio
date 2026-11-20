@@ -6,6 +6,7 @@ import ProjectCard from '../Components/ProjectCard'
 import { EmptyState } from '../Components/EmptyState'
 import { countWord } from '../content/count'
 import { projects } from '../content/projects'
+import { CATEGORIES } from '../content/types'
 
 const ALL = 'All'
 
@@ -17,7 +18,8 @@ export default function ProjectsPage() {
     document.title = 'Projects · John Rogee Turqueza'
   }, [])
 
-  const categories: string[] = [...new Set(projects.map((p) => p.category))]
+  // Fixed order from CATEGORIES; empty categories get no button.
+  const categories: string[] = CATEGORIES.filter((c) => projects.some((p) => p.category === c))
   const options = [
     { label: ALL, count: projects.length },
     ...categories.map((c) => ({ label: c, count: projects.filter((p) => p.category === c).length })),

@@ -2,24 +2,24 @@ import { expect, test } from 'vitest'
 import { validateProjects } from './validate'
 
 const ok = (fm: string, body = '') => `---\n${fm}\n---\n${body}`
-const base = 'name: A\nsummary: S\ncategory: Web apps\norder: 1\nstack: [React]'
+const base = 'name: A\nsummary: S\ncategory: Full-Stack Applications\norder: 1\nstack: [React]'
 const yes = () => true
 
 test('slug comes from the file name', () => {
   expect(validateProjects({ '/x/my-app.md': ok(base) }, yes)[0].slug).toBe('my-app')
 })
 test('missing summary names file and field', () => {
-  expect(() => validateProjects({ '/x/a.md': ok('name: A\ncategory: Web apps\norder: 1\nstack: [React]') }, yes))
+  expect(() => validateProjects({ '/x/a.md': ok('name: A\ncategory: Full-Stack Applications\norder: 1\nstack: [React]') }, yes))
     .toThrow(/a\.md.*summary/)
 })
 test('duplicate homeOrder fails', () => {
-  const fm = (o: number) => `name: A\nsummary: S\ncategory: Web apps\norder: ${o}\nstack: [React]\nhome: true\nhomeOrder: 1`
+  const fm = (o: number) => `name: A\nsummary: S\ncategory: Full-Stack Applications\norder: ${o}\nstack: [React]\nhome: true\nhomeOrder: 1`
   expect(() => validateProjects({ '/x/a.md': ok(fm(1)), '/x/b.md': ok(fm(2)) }, yes)).toThrow(/homeOrder/)
 })
 test('six home projects fail', () => {
   const files: Record<string, string> = {}
   for (let i = 1; i <= 6; i++) {
-    files[`/x/p${i}.md`] = ok(`name: A\nsummary: S\ncategory: Web apps\norder: ${i}\nstack: [React]\nhome: true\nhomeOrder: ${i}`)
+    files[`/x/p${i}.md`] = ok(`name: A\nsummary: S\ncategory: Full-Stack Applications\norder: ${i}\nstack: [React]\nhome: true\nhomeOrder: ${i}`)
   }
   expect(() => validateProjects(files, yes)).toThrow(/at most 5/)
 })

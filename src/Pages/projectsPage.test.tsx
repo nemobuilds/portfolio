@@ -48,17 +48,17 @@ describe('ProjectsPage', () => {
   test('filter shows only that category and updates the URL', async () => {
     page()
     expect(cards()).toHaveLength(5)
-    await userEvent.click(screen.getByRole('radio', { name: /Web apps/ }))
+    await userEvent.click(screen.getByRole('radio', { name: /Full-Stack Applications/ }))
     expect(cards()).toHaveLength(2)
-    expect(screen.getByTestId('where')).toHaveTextContent('/projects?category=Web%20apps')
-    expect(screen.getByRole('radio', { name: /Web apps/ })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByTestId('where')).toHaveTextContent('/projects?category=Full-Stack%20Applications')
+    expect(screen.getByRole('radio', { name: /Full-Stack Applications/ })).toHaveAttribute('aria-checked', 'true')
     await userEvent.click(screen.getByRole('radio', { name: /All/ }))
     expect(cards()).toHaveLength(5)
     expect(screen.getByTestId('where')).toHaveTextContent(/^\/projects$/)
   })
 
   test('the category in the URL is applied on load', () => {
-    page('/projects?category=Full-stack%20%26%20AI')
+    page('/projects?category=AI%20%26%20Automation')
     expect(cards()).toHaveLength(1)
     expect(within(cards()[0]).getByRole('heading', { name: 'Lore of Legends' })).toBeInTheDocument()
   })
@@ -90,7 +90,18 @@ describe('ProjectsPage', () => {
   test('empty categories have no filter button', () => {
     page()
     const radios = within(screen.getByRole('radiogroup', { name: 'Filter projects' })).getAllByRole('radio')
-    expect(radios.map((r) => r.textContent)).toEqual(['All5', 'Systems & backend2', 'Full-stack & AI1', 'Web apps2'])
+    expect(radios.map((r) => r.textContent)).toEqual([
+      'All5',
+      'Full-Stack Applications2',
+      'Frontend & UI/UX1',
+      'Backend & APIs1',
+      'AI & Automation1',
+    ])
+  })
+
+  test('an empty category in the URL shows all projects', () => {
+    page('/projects?category=Mobile%20Apps')
+    expect(cards()).toHaveLength(5)
   })
 })
 

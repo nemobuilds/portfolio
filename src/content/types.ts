@@ -1,6 +1,13 @@
 // Plain content types. The browser imports only these; zod stays in schema.ts (build time).
 
-export const CATEGORIES = ['Systems & backend', 'Full-stack & AI', 'Web apps'] as const
+// Filter order on /projects. A category with no projects gets no filter button.
+export const CATEGORIES = [
+  'Full-Stack Applications',
+  'Frontend & UI/UX',
+  'Backend & APIs',
+  'Mobile Apps',
+  'AI & Automation',
+] as const
 export type Category = (typeof CATEGORIES)[number]
 
 export type CaseStudy = {

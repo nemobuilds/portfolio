@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Layout } from '../Components/Layout'
 import CertificateCard from '../Components/CertificateCard'
 import { CertificateDialog } from '../Components/CertificateDialog'
+import { FilterButtons } from '../Components/FilterButtons'
 import NotFoundPage from './NotFoundPage'
-import { certificates, getCertificate } from '../content/certifications'
+import { CERT_CATEGORIES, certificates, getCertificate } from '../content/certifications'
 import { countWord } from '../content/count'
 
 const SITE = 'John Rogee Turqueza'
+const ALL = 'All'
 
 export default function CertificatesPage() {
   const { id } = useParams()
+  const [params] = useSearchParams()
   const navigate = useNavigate()
   const location = useLocation()
   const fromList = !!(location.state as { fromList?: boolean } | null)?.fromList
@@ -47,6 +50,19 @@ export default function CertificatesPage() {
 
   const index = certificate ? certificates.indexOf(certificate) : -1
 
+  // Fixed order from CERT_CATEGORIES; empty categories get no button.
+  const categories: string[] = CERT_CATEGORIES.filter((c) => certificates.some((x) => x.category === c))
+  const options = [
+    { label: ALL, count: certificates.length },
+    ...categories.map((c) => ({ label: c, count: certificates.filter((x) => x.category === c).length })),
+  ]
+  const wanted = params.get('category')
+  const selected = wanted && categories.includes(wanted) ? wanted : ALL
+  const shown = selected === ALL ? certificates : certificates.filter((x) => x.category === selected)
+  const select = (label: string) => {
+    navigate({ search: label === ALL ? '' : `?category=${encodeURIComponent(label)}` }, { replace: true })
+  }
+
   return (
     <Layout surface="sub" current="certifications">
       <div className="mx-auto w-full max-w-[1200px] px-6">
@@ -61,6 +77,7 @@ export default function CertificatesPage() {
           <p className="m-0 text-[16px] text-[var(--text-secondary)] min-[760px]:text-[18px]">
             {countWord(certificates.length)} certifications. Each one links to its issuer.
           </p>
+          <FilterButtons options={options} selected={selected} onSelect={select} label="Filter certifications" />
         </section>
         <section
           className="pb-[88px]"
@@ -69,7 +86,7 @@ export default function CertificatesPage() {
           }}
         >
           <div className="grid grid-cols-1 items-stretch gap-x-7 gap-y-10 min-[760px]:grid-cols-2 min-[1100px]:grid-cols-3">
-            {certificates.map((c) => (
+            {shown.map((c) => (
               <CertificateCard key={c.id} certificate={c} />
             ))}
           </div>

@@ -11,10 +11,12 @@ export function FilterButtons({
   options,
   selected,
   onSelect,
+  label = 'Filter projects',
 }: {
   options: Option[]
   selected: string
   onSelect(label: string): void
+  label?: string
 }) {
   const move = (e: KeyboardEvent<HTMLButtonElement>, from: number) => {
     const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0
@@ -29,7 +31,7 @@ export function FilterButtons({
   return (
     <div
       role="radiogroup"
-      aria-label="Filter projects"
+      aria-label={label}
       className="flex gap-2 max-[759px]:overflow-x-auto max-[759px]:pb-1 min-[760px]:flex-wrap"
     >
       {options.map((o, i) => {

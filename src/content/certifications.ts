@@ -1,8 +1,13 @@
 export type VerifyType = 'credly' | 'coursera' | 'linkedin' | 'other'
 
+// Filter order on /certificates. A category with no certifications gets no filter button.
+export const CERT_CATEGORIES = ['Programming', 'Security', 'Software Engineering', 'Cloud', 'DevOps'] as const
+export type CertCategory = (typeof CERT_CATEGORIES)[number]
+
 export type Certificate = {
   id: string
   name: string
+  category: CertCategory
   shortName?: string
   issuer: string
   via?: string
@@ -18,6 +23,7 @@ const all: Certificate[] = [
   {
     id: 'pcap',
     name: 'PCAP: Programming Essentials in Python',
+    category: 'Programming',
     issuer: 'Cisco Networking Academy & OpenEDG Python Institute',
     verifyType: 'linkedin',
     verifyUrl:
@@ -28,6 +34,7 @@ const all: Certificate[] = [
   {
     id: 'ccst-cybersecurity',
     name: 'Cisco Certified Support Technician Cybersecurity',
+    category: 'Security',
     shortName: 'CCST Cybersecurity',
     issuer: 'Cisco',
     via: 'Certiport',
@@ -40,6 +47,7 @@ const all: Certificate[] = [
   {
     id: 'intro-software-engineering',
     name: 'Introduction to Software Engineering',
+    category: 'Software Engineering',
     issuer: 'IBM',
     via: 'Coursera',
     issued: '2024-12',

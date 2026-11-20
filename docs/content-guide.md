@@ -37,7 +37,7 @@ Frontmatter is the block between the two `---` lines at the top of the file.
 | `name` | yes | Project name | `name: Tachyon` |
 | `summary` | yes | One line on cards | `summary: A performance testing intelligence platform.` |
 | `description` | no | Longer subtitle on the project page | `description: Performance Testing Intelligence Platform` |
-| `category` | yes | Filter group. Exactly one of: `Systems & backend`, `Full-stack & AI`, `Web apps` | `category: Systems & backend` |
+| `category` | yes | Filter group. Exactly one of: `Full-Stack Applications`, `Frontend & UI/UX`, `Backend & APIs`, `Mobile Apps`, `AI & Automation`. A group with no projects has no filter button | `category: Backend & APIs` |
 | `order` | yes | Whole number. Sorts `/projects`. Must be unique | `order: 1` |
 | `home` | no | `true` shows it on the home page. Default `false` | `home: true` |
 | `homeOrder` | if `home: true` | Whole number. Sorts the home list. Must be unique | `homeOrder: 1` |
@@ -110,6 +110,7 @@ Copy an existing object. Change the values. Use a new unique `id` with only lowe
 | --- | --- | --- | --- |
 | `id` | yes | URL slug. Unique | `id: 'ccst-cybersecurity'` |
 | `name` | yes | Full title | `name: 'Cisco Certified Support Technician Cybersecurity'` |
+| `category` | yes | Filter group. Exactly one of: `Programming`, `Security`, `Software Engineering`, `Cloud`, `DevOps`. A group with no certifications has no filter button | `category: 'Security'` |
 | `shortName` | no | Short title for cards | `shortName: 'CCST Cybersecurity'` |
 | `issuer` | yes | Who issued it | `issuer: 'Cisco'` |
 | `via` | no | Platform that delivered it | `via: 'Certiport'` |
@@ -129,7 +130,7 @@ A `scan` path must start with `/` and the file must exist in `public/`. The buil
 The build stops and prints the file name and field. These fail it:
 
 - A required project field is missing or empty (for example `summary:` with no value).
-- `category` is not one of the three allowed values.
+- `category` is not one of the five allowed values.
 - `order` is used by two projects. `homeOrder` is used by two home projects.
 - `home: true` with no `homeOrder`.
 - More than 5 projects with `home: true`.

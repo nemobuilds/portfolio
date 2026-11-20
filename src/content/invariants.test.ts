@@ -100,7 +100,7 @@ describe('following docs/content-guide.md keeps the invariants', () => {
         '---',
         'name: My Project',
         'summary: A new project.',
-        'category: Web apps',
+        'category: Full-Stack Applications',
         `order: ${maxOrder + 1}`,
         'stack: [React, Kafka, LangChain]',
         'repoUrl: https://github.com/example/my-project',

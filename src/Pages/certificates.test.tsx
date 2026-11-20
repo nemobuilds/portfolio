@@ -10,7 +10,7 @@ import { certificates } from '../content/certifications'
 
 function Where() {
   const l = useLocation()
-  return <output data-testid="where">{l.pathname}</output>
+  return <output data-testid="where">{l.pathname + l.search}</output>
 }
 
 function Back() {
@@ -42,6 +42,27 @@ describe('CertificatesPage', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Certifications' })).toBeInTheDocument()
     expect(screen.getByText('Three certifications. Each one links to its issuer.')).toBeInTheDocument()
     expect(document.title).toBe('Certifications · John Rogee Turqueza')
+  })
+
+  test('filter buttons follow the category order and hide empty ones', () => {
+    page()
+    const radios = within(screen.getByRole('radiogroup', { name: 'Filter certifications' })).getAllByRole('radio')
+    expect(radios.map((r) => r.textContent)).toEqual(['All3', 'Programming1', 'Security1', 'Software Engineering1'])
+  })
+
+  test('filter shows only that category and updates the URL', async () => {
+    page()
+    await userEvent.click(screen.getByRole('radio', { name: /Security/ }))
+    expect(screen.getAllByRole('article')).toHaveLength(1)
+    expect(cardFor('CCST Cybersecurity')).toBeInTheDocument()
+    expect(screen.getByTestId('where')).toHaveTextContent('/certificates?category=Security')
+    await userEvent.click(screen.getByRole('radio', { name: /All/ }))
+    expect(screen.getAllByRole('article')).toHaveLength(3)
+  })
+
+  test('an unknown or empty category in the URL shows all certifications', () => {
+    page('/certificates?category=Cloud')
+    expect(screen.getAllByRole('article')).toHaveLength(3)
   })
 
   test('CCST card shows short name, full name, issuer via, date and verify button', () => {
