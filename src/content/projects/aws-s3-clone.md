@@ -6,6 +6,6 @@ categories: [Backend & APIs, Personal Projects, Experiments & Prototypes, Cloud 
 order: 2
 home: true
 homeOrder: 4
-stack: [Java, Spring Boot, Spring Data JPA, PostgreSQL, Swagger]
+stack: [Java, Spring Boot, Spring Data JPA, PostgreSQL, Swagger, Git]
 repoUrl: https://github.com/jnrgxx/object-storage-service
 ---

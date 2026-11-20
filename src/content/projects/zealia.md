@@ -6,7 +6,7 @@ categories: [Full-Stack Applications, Academic, Education & Teams]
 order: 4
 home: true
 homeOrder: 2
-stack: [PHP, Composer, JavaScript, HTML, Tailwind CSS]
+stack: [PHP, Composer, JavaScript, HTML, Tailwind CSS, Git]
 repoUrl: https://github.com/jnrgxx/Zealia
 
 extraLinks:
