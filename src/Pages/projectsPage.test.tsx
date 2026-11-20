@@ -124,7 +124,7 @@ describe('ProjectsPage', () => {
 
   test('newest and oldest use the project date, and an unknown sort falls back to Featured', () => {
     page('/projects?sort=oldest')
-    expect(names()[0]).toBe('Zealia')
+    expect(names()).toEqual(['AMBITION', 'Zealia', 'AWS S3 Clone', 'Lore of Legends', 'Endpoint'])
     cleanup()
     page('/projects?sort=newest')
     expect(names()[0]).toBe('Endpoint')
@@ -138,7 +138,7 @@ describe('ProjectsPage', () => {
     expect(cards()).toHaveLength(5)
   })
 
-  test('AMBITION card has Live demo and no GitHub', () => {
+  test('AMBITION card has Live demo and GitHub links that open a new tab', () => {
     page()
     const card = cards().find((c) => within(c).queryByRole('heading', { name: 'AMBITION' }))!
     const live = within(card).getByRole('link', { name: /Live demo/ })
@@ -146,7 +146,10 @@ describe('ProjectsPage', () => {
     expect(live).toHaveAttribute('target', '_blank')
     expect(live.className).toContain('text-[var(--text)]')
     expect(live).toHaveAttribute('rel', 'noreferrer')
-    expect(within(card).queryByRole('link', { name: /GitHub/ })).toBeNull()
+    expect(within(card).getByRole('link', { name: /GitHub/ })).toHaveAttribute(
+      'href',
+      'https://github.com/nemobuilds/ambition.github.io',
+    )
   })
 
   test('card says Details when there is no case study', () => {

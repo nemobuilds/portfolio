@@ -22,7 +22,7 @@ test('project dates', () => {
     'aws-s3-clone': '2026-05',
     'lore-of-legends': '2026-05',
     zealia: '2024-07',
-    ambition: '2026-04',
+    ambition: '2023-12',
   })
 })
 test('project categories', () => {
