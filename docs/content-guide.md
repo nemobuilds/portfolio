@@ -37,7 +37,7 @@ Frontmatter is the block between the two `---` lines at the top of the file.
 | `name` | yes | Project name | `name: Tachyon` |
 | `summary` | yes | One line on cards | `summary: A performance testing intelligence platform.` |
 | `description` | no | Longer subtitle on the project page | `description: Performance Testing Intelligence Platform` |
-| `category` | yes | Filter group. Exactly one of: `Full-Stack Applications`, `Frontend & UI/UX`, `Backend & APIs`, `Mobile Apps`, `AI & Automation`. A group with no projects has no filter button | `category: Backend & APIs` |
+| `categories` | yes | List of one or more filter categories. Pick from the three groups in [Project categories](#project-categories). No name twice | `categories: [Backend & APIs, Open Source, Developer Tools]` |
 | `order` | yes | Whole number. Sorts `/projects`. Must be unique | `order: 1` |
 | `home` | no | `true` shows it on the home page. Default `false` | `home: true` |
 | `homeOrder` | if `home: true` | Whole number. Sorts the home list. Must be unique | `homeOrder: 1` |
@@ -69,6 +69,22 @@ gallery:
 ```
 
 If an optional field is missing, that part of the page is hidden. No placeholder text shows.
+
+### Project categories
+
+The `/projects` page has a search box and a filter sidebar. The sidebar has three groups. A project can have categories from any group, and more than one from the same group.
+
+| Group | Categories |
+| --- | --- |
+| Focus | `Full-Stack Applications`, `Frontend & UI/UX`, `Backend & APIs`, `Mobile Apps`, `AI & Automation` |
+| Origin | `Client Work`, `SaaS & Products`, `Open Source`, `Experiments & Prototypes`, `Personal Projects`, `Academic` |
+| Domain | `Developer Tools`, `Cloud & Infrastructure`, `Data & Analytics`, `E-Commerce & FinTech`, `Education & Teams`, `Games & Interactive` |
+
+- A category with no projects has no checkbox. A group with no checkboxes is hidden.
+- Use `Open Source` for projects built as reusable public tools, not for every public repo.
+- Project cards show the Focus categories. The project page shows Focus under "Type", with Origin under it.
+- Search matches `name`, `summary`, `description` and `stack`.
+- To add or rename a category, edit `PROJECT_FACETS` in `src/content/types.ts`. That is code, so run `npm test` too.
 
 ### Images
 
@@ -110,7 +126,7 @@ Copy an existing object. Change the values. Use a new unique `id` with only lowe
 | --- | --- | --- | --- |
 | `id` | yes | URL slug. Unique | `id: 'ccst-cybersecurity'` |
 | `name` | yes | Full title | `name: 'Cisco Certified Support Technician Cybersecurity'` |
-| `category` | yes | Filter group. Exactly one of: `Programming`, `Security`, `Software Engineering`, `Cloud`, `DevOps`. A group with no certifications has no filter button | `category: 'Security'` |
+| `categories` | yes | List of one or more filter categories. Pick from the two groups below. No name twice | `categories: ['Security & Networking', 'Certification']` |
 | `shortName` | no | Short title for cards | `shortName: 'CCST Cybersecurity'` |
 | `issuer` | yes | Who issued it | `issuer: 'Cisco'` |
 | `via` | no | Platform that delivered it | `via: 'Certiport'` |
@@ -125,12 +141,35 @@ Without a `scan`, the site shows the issuer name on a plain card. Without `verif
 
 A `scan` path must start with `/` and the file must exist in `public/`. The build checks this.
 
+### Certification categories
+
+The `/certificates` page has a search box and a filter sidebar with two groups. Give each certification its topics and one type.
+
+| Group | Categories |
+| --- | --- |
+| Topic | `Programming`, `Cloud`, `AI`, `Data`, `DevOps & Containers`, `Security & Networking`, `Software Engineering` |
+| Type | `Certification` (an exam you passed), `Course` (a finished course), `Event` (a hackathon or skills event) |
+
+- A category with no certifications has no checkbox.
+- Search matches `name`, `shortName`, `issuer` and `via`.
+- To add or rename a category, edit `CERT_FACETS` in `src/content/certifications.ts`.
+
+## Shareable filter links
+
+The search and the picked categories live in the page URL. Copy the URL to share a filtered view. Examples:
+
+- `/projects?q=spring&focus=backend-apis&domain=developer-tools`
+- `/certificates?topic=cloud,data&type=course`
+
+Each category becomes lowercase words joined by hyphens: `Frontend & UI/UX` becomes `frontend-ui-ux`. Picks in one group show items with any of them. Picks in different groups show only items that match each group. Old links with `?category=<name>` still work.
+
 ## What fails the build
 
 The build stops and prints the file name and field. These fail it:
 
 - A required project field is missing or empty (for example `summary:` with no value).
-- `category` is not one of the five allowed values.
+- `categories` is missing, empty, lists a name twice, or has a name that is not in [Project categories](#project-categories).
+- A project file still uses the old single `category:` field. Change it to a `categories:` list.
 - `order` is used by two projects. `homeOrder` is used by two home projects.
 - `home: true` with no `homeOrder`.
 - More than 5 projects with `home: true`.
@@ -142,4 +181,5 @@ The build stops and prints the file name and field. These fail it:
 - An image file that is not in `public/` (project images and certification `scan`).
 - A certification `id` that is used twice, or that has capitals, spaces or symbols.
 - A certification `issued` value that is not `YYYY-MM`.
+- A certification with no `categories`, an unknown category, or the same category twice.
 - More than 3 certifications with `home: true`, or two home certifications with the same `homeOrder`.

@@ -1,13 +1,28 @@
 export type VerifyType = 'credly' | 'coursera' | 'linkedin' | 'microsoft' | 'other'
 
-// Filter order on /certificates. A category with no certifications gets no filter button.
-export const CERT_CATEGORIES = ['Programming', 'Security', 'Software Engineering', 'Cloud', 'DevOps'] as const
-export type CertCategory = (typeof CERT_CATEGORIES)[number]
+// Filter groups on /certificates, in display order. A certification lists any
+// of these names in `categories`. A category with no certifications gets no checkbox.
+export const CERT_FACETS = [
+  {
+    key: 'topic',
+    label: 'Topic',
+    options: ['Programming', 'Cloud', 'AI', 'Data', 'DevOps & Containers', 'Security & Networking', 'Software Engineering'],
+  },
+  {
+    // Certification: an exam you passed. Course: a finished course. Event: a hackathon or skills event.
+    key: 'type',
+    label: 'Type',
+    options: ['Certification', 'Course', 'Event'],
+  },
+] as const
+
+export type CertCategory = (typeof CERT_FACETS)[number]['options'][number]
+export const CERT_CATEGORIES: readonly CertCategory[] = CERT_FACETS.flatMap((f) => f.options)
 
 export type Certificate = {
   id: string
   name: string
-  category: CertCategory
+  categories: CertCategory[]
   shortName?: string
   issuer: string
   via?: string
@@ -23,6 +38,7 @@ const all: Certificate[] = [
   {
     id: 'az-900',
     name: 'Microsoft Azure Fundamentals',
+    categories: ['Cloud', 'Certification'],
     shortName: 'AZ-900',
     issuer: 'Microsoft',
     via: 'Pearson Vue',
@@ -36,7 +52,7 @@ const all: Certificate[] = [
   {
     id: 'pcap',
     name: 'PCAP: Programming Essentials in Python',
-    category: 'Programming',
+    categories: ['Programming', 'Course'],
     issuer: 'Cisco Networking Academy & OpenEDG Python Institute',
     issued: '2022-12',
     verifyType: 'linkedin',
@@ -49,7 +65,7 @@ const all: Certificate[] = [
   {
     id: 'ccst-cybersecurity',
     name: 'Cisco Certified Support Technician Cybersecurity',
-    category: 'Security',
+    categories: ['Security & Networking', 'Certification'],
     shortName: 'CCST Cybersecurity',
     issuer: 'Cisco',
     via: 'Certiport',
@@ -63,7 +79,7 @@ const all: Certificate[] = [
   {
     id: 'intro-software-engineering',
     name: 'Introduction to Software Engineering',
-    category: 'Software Engineering',
+    categories: ['Software Engineering', 'Course'],
     issuer: 'IBM',
     via: 'Coursera',
     issued: '2024-12',
@@ -74,6 +90,7 @@ const all: Certificate[] = [
   {
     id: 'ai-skills-fest-2026',
     name: 'AI Skills Fest 2026',
+    categories: ['AI', 'Event'],
     issuer: 'Microsoft',
     issued: '2026-06',
     verifyType: 'credly',
@@ -82,6 +99,7 @@ const all: Certificate[] = [
   {
     id: 'understanding-data-engineering',
     name: 'Understanding Data Engineering',
+    categories: ['Data', 'Course'],
     issuer: 'DataCamp',
     issued: '2025-09',
     verifyType: 'other',
@@ -91,6 +109,7 @@ const all: Certificate[] = [
   {
     id: 'intermediate-python',
     name: 'Intermediate Python',
+    categories: ['Programming', 'Data', 'Course'],
     issuer: 'DataCamp',
     issued: '2025-07',
     verifyType: 'other',
@@ -100,6 +119,7 @@ const all: Certificate[] = [
   {
     id: 'containerization-virtualization',
     name: 'Containerization and Virtualization Concepts',
+    categories: ['DevOps & Containers', 'Cloud', 'Course'],
     issuer: 'DataCamp',
     issued: '2025-07',
     verifyType: 'other',
@@ -109,6 +129,7 @@ const all: Certificate[] = [
   {
     id: 'python-for-developers',
     name: 'Introduction to Python for Developers',
+    categories: ['Programming', 'Course'],
     issuer: 'DataCamp',
     issued: '2025-06',
     verifyType: 'other',
@@ -118,6 +139,7 @@ const all: Certificate[] = [
   {
     id: 'intro-python',
     name: 'Introduction to Python',
+    categories: ['Programming', 'Data', 'Course'],
     issuer: 'DataCamp',
     issued: '2025-06',
     verifyType: 'other',
@@ -128,6 +150,7 @@ const all: Certificate[] = [
     id: 'innolympics-2025',
     name: 'InnOlympics 2025 Hackathon, Certificate of Participation',
     shortName: 'InnOlympics 2025',
+    categories: ['Event'],
     issuer: 'Google Developer Groups on Campus PLM',
     issued: '2025-01',
     scan: '/images/certifications/innolympics-cert-of-participation.webp',
@@ -135,7 +158,9 @@ const all: Certificate[] = [
   {
     id: 'software-engineering-essentials',
     name: 'Software Engineering Essentials',
-    issuer: 'Coursera',
+    categories: ['Software Engineering', 'Course'],
+    issuer: 'IBM',
+    via: 'Coursera',
     issued: '2024-12',
     verifyType: 'credly',
     verifyUrl: 'https://www.credly.com/badges/3abafac8-749a-4027-99c7-db5d285b3abc/linked_in_profile',
@@ -144,6 +169,7 @@ const all: Certificate[] = [
   {
     id: 'intro-packet-tracer',
     name: 'Introduction to Packet Tracer',
+    categories: ['Security & Networking', 'Course'],
     issuer: 'Cisco Networking Academy',
     issued: '2023-12',
     scan: '/images/certifications/intro-to-packet-tracer.webp',
@@ -151,6 +177,7 @@ const all: Certificate[] = [
   {
     id: 'integrated-programming-technologies-1',
     name: 'Integrated Programming Technologies 1',
+    categories: ['Programming', 'Course'],
     issuer: 'CodeChum',
     issued: '2022-12',
     scan: '/images/certifications/codechum-integrated-programming.webp',

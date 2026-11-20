@@ -1,14 +1,40 @@
 // Plain content types. The browser imports only these; zod stays in schema.ts (build time).
 
-// Filter order on /projects. A category with no projects gets no filter button.
-export const CATEGORIES = [
-  'Full-Stack Applications',
-  'Frontend & UI/UX',
-  'Backend & APIs',
-  'Mobile Apps',
-  'AI & Automation',
+// Filter groups on /projects, in display order. A project lists any of these
+// names in `categories`. A category with no projects gets no checkbox.
+export const PROJECT_FACETS = [
+  {
+    key: 'focus',
+    label: 'Focus',
+    options: ['Full-Stack Applications', 'Frontend & UI/UX', 'Backend & APIs', 'Mobile Apps', 'AI & Automation'],
+  },
+  {
+    key: 'origin',
+    label: 'Origin',
+    options: ['Client Work', 'SaaS & Products', 'Open Source', 'Experiments & Prototypes', 'Personal Projects', 'Academic'],
+  },
+  {
+    key: 'domain',
+    label: 'Domain',
+    options: [
+      'Developer Tools',
+      'Cloud & Infrastructure',
+      'Data & Analytics',
+      'E-Commerce & FinTech',
+      'Education & Teams',
+      'Games & Interactive',
+    ],
+  },
 ] as const
-export type Category = (typeof CATEGORIES)[number]
+
+export type Category = (typeof PROJECT_FACETS)[number]['options'][number]
+export const CATEGORIES = PROJECT_FACETS.flatMap((f) => f.options) as [Category, ...Category[]]
+
+/** The project's categories that belong to one facet, in facet order. */
+export function categoriesIn(facetKey: (typeof PROJECT_FACETS)[number]['key'], categories: readonly string[]): string[] {
+  const facet = PROJECT_FACETS.find((f) => f.key === facetKey)!
+  return facet.options.filter((o) => categories.includes(o))
+}
 
 export type CaseStudy = {
   problem: string
@@ -23,7 +49,7 @@ export type Project = {
   name: string
   summary: string
   description?: string
-  category: Category
+  categories: Category[]
   order: number
   home: boolean
   homeOrder?: number

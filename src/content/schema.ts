@@ -15,7 +15,10 @@ export const frontmatterSchema = z.object({
   name: z.string().min(1),
   summary: z.string().min(1),
   description: z.string().min(1).optional(),
-  category: z.enum(CATEGORIES),
+  categories: z
+    .array(z.enum(CATEGORIES))
+    .min(1)
+    .refine((list) => new Set(list).size === list.length, 'must not list the same category twice'),
   order: z.number().int(),
   home: z.boolean().default(false),
   homeOrder: z.number().int().optional(),
