@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import type { Project } from '../content/projects'
-import { categoriesIn } from '../content/types'
+import { categoriesIn, PROJECT_FACETS } from '../content/types'
+import { filterHref } from '../filter/filter'
+import { CategoryPill, CategoryPills } from './CategoryPill'
 import { Icon } from './Icon'
 import { StackList } from './StackList'
 
@@ -19,18 +21,33 @@ const shortUrl = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/$/, '')
 
 export function FactsRail({ project }: { project: Project }) {
   const { categories, role, period, stack, repoUrl, liveUrl, isPrivate, extraLinks } = project
-  const focus = categoriesIn('focus', categories)
-  const origin = categoriesIn('origin', categories)
   const hasLinks = !!repoUrl || !!liveUrl || isPrivate || extraLinks.length > 0
   return (
     <aside
       aria-label="Project facts"
       className="surface-slate flex flex-col rounded-[10px] p-[26px] shadow-[0_26px_36px_-18px_rgba(8,14,50,0.45)] min-[900px]:sticky min-[900px]:top-6"
     >
-      <Fact label="Type">
-        <b className="text-[17px] font-semibold leading-snug">{(focus.length ? focus : categories).join(' · ')}</b>
-        {origin.length > 0 && <span className="text-[15px] text-[var(--text-secondary)]">{origin.join(' · ')}</span>}
-      </Fact>
+      {PROJECT_FACETS.map((facet) => {
+        const names = categoriesIn(facet.key, categories)
+        if (names.length === 0) return null
+        return (
+          <Fact key={facet.key} label={facet.label}>
+            <div className="pt-0.5">
+              <CategoryPills label={facet.label}>
+                {names.map((name) => (
+                  <li key={name}>
+                    <CategoryPill
+                      label={name}
+                      variant={facet.key === 'focus' ? 'filled' : 'outline'}
+                      to={filterHref('/projects', PROJECT_FACETS, name)}
+                    />
+                  </li>
+                ))}
+              </CategoryPills>
+            </div>
+          </Fact>
+        )
+      })}
       {role && (
         <Fact label="Role">
           <span className="text-[15px]">{role}</span>

@@ -82,7 +82,8 @@ The `/projects` page has a search box and a filter sidebar. The sidebar has thre
 
 - A category with no projects has no checkbox. A group with no checkboxes is hidden.
 - Use `Open Source` for projects built as reusable public tools, not for every public repo.
-- Project cards show the Focus categories. The project page shows Focus under "Type", with Origin under it.
+- Project cards show up to 3 Focus categories as pills, then a `+N` pill. Card pills are not links.
+- The project page facts box shows one row of pills per group (Focus, Origin, Domain). Each pill links to `/projects` filtered by that category. A group with no categories is hidden.
 - Search matches `name`, `summary`, `description` and `stack`.
 - To add or rename a category, edit `PROJECT_FACETS` in `src/content/types.ts`. That is code, so run `npm test` too.
 
@@ -152,6 +153,8 @@ The `/certificates` page has a search box and a filter sidebar with two groups. 
 
 - A category with no certifications has no checkbox.
 - Search matches `name`, `shortName`, `issuer` and `via`.
+- Certification cards show the Type as a badge on the scan image and the Topics as pills under the date. Card pills are not links.
+- The certification modal has a Topic row and a Type row. Each pill links to `/certificates` filtered by that category and closes the modal.
 - To add or rename a category, edit `CERT_FACETS` in `src/content/certifications.ts`.
 
 ## Shareable filter links

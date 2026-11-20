@@ -201,10 +201,24 @@ describe('ProjectCard', () => {
     expect(screen.getByText('Code is private')).toBeInTheDocument()
   })
 
-  test('shows only the Focus categories, in group order', () => {
+  test('shows the Focus categories as plain pills, in group order', () => {
     show({ ...base, categories: ['Open Source', 'Backend & APIs', 'Full-Stack Applications', 'Developer Tools'] })
-    expect(screen.getByText('Full-Stack Applications · Backend & APIs')).toBeInTheDocument()
+    const pills = within(screen.getByRole('list', { name: 'Focus' })).getAllByRole('listitem')
+    expect(pills.map((p) => p.textContent)).toEqual(['Full-Stack Applications', 'Backend & APIs'])
+    expect(within(screen.getByRole('list', { name: 'Focus' })).queryByRole('link')).toBeNull()
     expect(screen.queryByText(/Open Source/)).toBeNull()
+  })
+
+  test('shows at most three Focus pills, then +N', () => {
+    show({ ...base, categories: ['Full-Stack Applications', 'Frontend & UI/UX', 'Backend & APIs', 'Mobile Apps', 'AI & Automation'] })
+    const pills = within(screen.getByRole('list', { name: 'Focus' })).getAllByRole('listitem')
+    expect(pills.map((p) => p.textContent)).toEqual(['Full-Stack Applications', 'Frontend & UI/UX', 'Backend & APIs', '+2'])
+    expect(pills[3]).toHaveAttribute('title', 'Mobile Apps, AI & Automation')
+  })
+
+  test('no Focus category means no pill row', () => {
+    show({ ...base, categories: ['Open Source'] })
+    expect(screen.queryByRole('list', { name: 'Focus' })).toBeNull()
   })
 
   test('public project does not say the code is private', () => {
