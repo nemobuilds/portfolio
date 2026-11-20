@@ -37,14 +37,13 @@ export default function CertificatesPage() {
   }, [certificate, missing])
 
   // After the dialog closes, return focus to the card that opened it, or to the h1 on a deep link.
+  // A category pill in the dialog can filter that card out, so fall back to the h1.
   useEffect(() => {
     const was = lastId.current
     lastId.current = id
     if (!was || id) return
-    const target = openedFromCard.current
-      ? document.querySelector<HTMLElement>(`[data-cert-id="${was}"]`)
-      : heading.current
-    target?.focus()
+    const card = openedFromCard.current ? document.querySelector<HTMLElement>(`[data-cert-id="${was}"]`) : null
+    ;(card ?? heading.current)?.focus()
   }, [id])
 
   const close = useCallback(() => {

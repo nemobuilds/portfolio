@@ -3,6 +3,7 @@ import {
   EMPTY_FILTER,
   categorySlug,
   facetViews,
+  filterHref,
   filterItems,
   isFiltered,
   matchesQuery,
@@ -124,6 +125,16 @@ describe('URL params', () => {
   test('the old ?category=<name> link still picks that category', () => {
     expect(readParams(new URLSearchParams('category=Developer%20Tools'), facets).picked).toEqual({ domain: ['Developer Tools'] })
     expect(readParams(new URLSearchParams('category=Nope'), facets)).toEqual(EMPTY_FILTER)
+  })
+})
+
+describe('filterHref', () => {
+  test('links to the list filtered by one category', () => {
+    expect(filterHref('/projects', facets, 'Frontend & UI/UX')).toBe('/projects?focus=frontend-ui-ux')
+    expect(filterHref('/projects', facets, 'Developer Tools')).toBe('/projects?domain=developer-tools')
+  })
+  test('an unknown category links to the plain list', () => {
+    expect(filterHref('/projects', facets, 'Nope')).toBe('/projects')
   })
 })
 

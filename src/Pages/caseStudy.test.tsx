@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { describe, test, expect } from 'vitest'
 import { ThemeProvider } from '../theme/ThemeProvider'
 import CaseStudyPage, { CaseStudyView } from './CaseStudyPage'
@@ -11,6 +11,11 @@ import { getProject, nextProject, projects } from '../content/projects'
 import type { Project } from '../content/projects'
 
 const base = getProject('zealia')!
+
+function Where() {
+  const l = useLocation()
+  return <output data-testid="where">{l.pathname + l.search}</output>
+}
 
 const full: Project = {
   ...base,
@@ -59,24 +64,57 @@ describe('ProjectLinks', () => {
 })
 
 describe('FactsRail', () => {
+  const rail = (project: Project) =>
+    render(
+      <MemoryRouter>
+        <FactsRail project={project} />
+      </MemoryRouter>,
+    )
+
   test('hides Role and Timeline when missing', () => {
-    render(<FactsRail project={{ ...base, role: undefined, period: undefined }} />)
-    expect(screen.getByText('Type')).toBeInTheDocument()
+    rail({ ...base, role: undefined, period: undefined })
+    expect(screen.getByText('Focus')).toBeInTheDocument()
     expect(screen.queryByText('Role')).toBeNull()
     expect(screen.queryByText('Timeline')).toBeNull()
   })
 
   test('shows Role and Timeline when present', () => {
-    render(<FactsRail project={full} />)
+    rail(full)
     expect(screen.getByText('Solo build')).toBeInTheDocument()
     expect(screen.getByText('2025 to present')).toBeInTheDocument()
   })
 
-  test('Type shows the Focus categories, with the Origin categories under them', () => {
-    render(<FactsRail project={{ ...base, categories: ['Backend & APIs', 'Full-Stack Applications', 'Open Source', 'Developer Tools'] }} />)
-    expect(screen.getByText('Full-Stack Applications · Backend & APIs')).toBeInTheDocument()
-    expect(screen.getByText('Open Source')).toBeInTheDocument()
-    expect(screen.queryByText(/Developer Tools/)).toBeNull()
+  test('groups category pills by Focus, Origin and Domain, each linking to the filtered list', () => {
+    rail({ ...base, categories: ['Developer Tools', 'Backend & APIs', 'Full-Stack Applications', 'Open Source'] })
+    const names = (group: string) =>
+      within(screen.getByRole('list', { name: group })).getAllByRole('link').map((l) => [l.textContent, l.getAttribute('href')])
+    expect(names('Focus')).toEqual([
+      ['Full-Stack Applications', '/projects?focus=full-stack-applications'],
+      ['Backend & APIs', '/projects?focus=backend-apis'],
+    ])
+    expect(names('Origin')).toEqual([['Open Source', '/projects?origin=open-source']])
+    expect(names('Domain')).toEqual([['Developer Tools', '/projects?domain=developer-tools']])
+  })
+
+  test('a group with no categories is left out', () => {
+    rail({ ...base, categories: ['Backend & APIs'] })
+    expect(screen.queryByRole('list', { name: 'Origin' })).toBeNull()
+    expect(screen.queryByRole('list', { name: 'Domain' })).toBeNull()
+  })
+
+  test('a pill opens the list filtered by that category', async () => {
+    render(
+      <ThemeProvider>
+        <MemoryRouter initialEntries={[`/projects/${base.slug}`]}>
+          <Routes>
+            <Route path="/projects/:slug" element={<CaseStudyPage />} />
+            <Route path="/projects" element={<Where />} />
+          </Routes>
+        </MemoryRouter>
+      </ThemeProvider>,
+    )
+    await userEvent.click(within(screen.getByRole('list', { name: 'Origin' })).getByRole('link', { name: 'Academic' }))
+    expect(screen.getByTestId('where')).toHaveTextContent('/projects?origin=academic')
   })
 })
 

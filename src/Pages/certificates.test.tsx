@@ -219,6 +219,38 @@ describe('CertificatesPage', () => {
     )
   })
 
+  test('card shows the type as a badge and the topics as plain pills', () => {
+    page()
+    const card = cardFor('Intermediate Python')
+    expect(within(card).getByText('Course')).toBeInTheDocument()
+    expect(within(card).getByText('Type:')).toHaveClass('sr-only')
+    const topics = within(card).getByRole('list', { name: 'Topics' })
+    expect(within(topics).getAllByRole('listitem').map((p) => p.textContent)).toEqual(['Programming', 'Data'])
+    expect(within(topics).queryByRole('link')).toBeNull()
+  })
+
+  test('the modal has Topic and Type rows with link pills', () => {
+    page('/certificates/containerization-virtualization')
+    const dialog = screen.getByRole('dialog')
+    const links = (group: string) =>
+      within(within(dialog).getByRole('list', { name: group })).getAllByRole('link').map((l) => [l.textContent, l.getAttribute('href')])
+    expect(links('Topic')).toEqual([
+      ['Cloud', '/certificates?topic=cloud'],
+      ['DevOps & Containers', '/certificates?topic=devops-containers'],
+    ])
+    expect(links('Type')).toEqual([['Course', '/certificates?type=course']])
+  })
+
+  test('a modal pill closes the modal, filters the list and focuses the h1', async () => {
+    page('/certificates')
+    await userEvent.click(within(cardFor('AZ-900')).getByRole('link', { name: 'AZ-900' }))
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('link', { name: 'Certification' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByTestId('where')).toHaveTextContent('/certificates?type=certification')
+    expect(screen.getAllByRole('article')).toHaveLength(2)
+    expect(within(cardFor('AZ-900')).getByRole('link', { name: 'AZ-900' })).toHaveFocus()
+  })
+
   test('unknown id renders Page not found', () => {
     page('/certificates/nope')
     expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument()

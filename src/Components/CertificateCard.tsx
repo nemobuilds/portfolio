@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 import type { Certificate } from '../content/certifications'
-import { verifyLabel } from '../content/certifications'
+import { certCategoriesIn, verifyLabel } from '../content/certifications'
 import { formatMonth } from '../content/dates'
 import { Button } from './Button'
+import { CategoryPill, CategoryPills } from './CategoryPill'
 import { Icon } from './Icon'
 import { SmartImage } from './SmartImage'
 
@@ -75,9 +76,20 @@ export default function CertificateCard({
   if (variant === 'home') return <HomeCertificateCard certificate={certificate} />
   const title = certificate.shortName ?? certificate.name
   const showFull = !!certificate.shortName
+  const topics = certCategoriesIn('topic', certificate.categories)
+  const type = certCategoriesIn('type', certificate.categories)[0]
   return (
     <article className="surface-slate relative flex h-full flex-col gap-4 rounded-[10px] p-4 pb-5 shadow-[0_26px_36px_-18px_rgba(8,14,50,0.45)]">
-      <CertificateScan certificate={certificate} />
+      <div className="relative">
+        <CertificateScan certificate={certificate} />
+        {/* The scan panel is light in both themes, so the badge uses fixed ink and cream. */}
+        {type && (
+          <span className="absolute left-2.5 top-2.5 inline-flex min-h-[26px] items-center rounded-full bg-[#17161C] px-2.5 text-[13px] font-bold leading-none text-[#F4EEE3]">
+            <span className="sr-only">Type: </span>
+            {type}
+          </span>
+        )}
+      </div>
       <div className="flex flex-col gap-1.5 px-1">
         <h3 className="m-0 text-[21px] font-bold leading-[1.2] tracking-[-0.02em]">
           <Link
@@ -93,6 +105,17 @@ export default function CertificateCard({
         <p className="m-0 text-[15px] font-medium leading-[1.4] text-[var(--text-secondary)]">{issuerLine(certificate)}</p>
         {certificate.issued && (
           <p className="m-0 text-[14px] font-semibold text-[var(--date)]">{formatMonth(certificate.issued)}</p>
+        )}
+        {topics.length > 0 && (
+          <div className="pt-1">
+            <CategoryPills label="Topics">
+              {topics.map((t) => (
+                <li key={t}>
+                  <CategoryPill label={t} />
+                </li>
+              ))}
+            </CategoryPills>
+          </div>
         )}
       </div>
       {certificate.verifyUrl && (

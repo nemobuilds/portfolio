@@ -126,6 +126,11 @@ export function togglePick(state: FilterState, facets: readonly Facet[], name: s
   return { ...state, picked }
 }
 
+/** Link to a list page filtered by one category: ("/projects", …, "Backend & APIs") -> "/projects?focus=backend-apis". */
+export function filterHref(path: string, facets: readonly Facet[], name: string): string {
+  return path + writeParams(togglePick(EMPTY_FILTER, facets, name), facets)
+}
+
 /** All picked names, facet by facet, in option order. */
 export function pickedList(state: FilterState, facets: readonly Facet[]): string[] {
   return facets.flatMap((f) => inOptionOrder(f, state.picked[f.key] ?? []))

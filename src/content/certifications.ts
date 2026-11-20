@@ -19,6 +19,12 @@ export const CERT_FACETS = [
 export type CertCategory = (typeof CERT_FACETS)[number]['options'][number]
 export const CERT_CATEGORIES: readonly CertCategory[] = CERT_FACETS.flatMap((f) => f.options)
 
+/** The certification's categories that belong to one group, in group order. */
+export function certCategoriesIn(facetKey: (typeof CERT_FACETS)[number]['key'], categories: readonly string[]): string[] {
+  const facet = CERT_FACETS.find((f) => f.key === facetKey)!
+  return facet.options.filter((o) => categories.includes(o))
+}
+
 export type Certificate = {
   id: string
   name: string

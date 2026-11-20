@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import type { Certificate } from '../content/certifications'
-import { verifyLabel } from '../content/certifications'
+import { CERT_FACETS, certCategoriesIn, verifyLabel } from '../content/certifications'
 import { formatMonth } from '../content/dates'
+import { filterHref } from '../filter/filter'
 import { Button } from './Button'
+import { CategoryPill, CategoryPills } from './CategoryPill'
 import { CertificateScan, issuerLine } from './CertificateCard'
 import { Dialog } from './Dialog'
 import { Icon } from './Icon'
@@ -15,6 +17,25 @@ function Row({ label, children }: { label: string; children: string }) {
     <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-4 border-t border-[color-mix(in_srgb,var(--text)_16%,transparent)] py-3 min-[760px]:grid-cols-[110px_minmax(0,1fr)]">
       <dt className="text-[14px] text-[var(--text-secondary)]">{label}</dt>
       <dd className="m-0 text-[16px] font-semibold leading-[1.35]">{children}</dd>
+    </div>
+  )
+}
+
+/** Topic or Type row: link pills to /certificates filtered by that category. Following one closes the dialog. */
+function PillRow({ label, names, variant }: { label: string; names: string[]; variant: 'filled' | 'outline' }) {
+  if (names.length === 0) return null
+  return (
+    <div className="grid grid-cols-[96px_minmax(0,1fr)] items-center gap-4 border-t border-[color-mix(in_srgb,var(--text)_16%,transparent)] py-2 min-[760px]:grid-cols-[110px_minmax(0,1fr)]">
+      <dt className="text-[14px] text-[var(--text-secondary)]">{label}</dt>
+      <dd className="m-0">
+        <CategoryPills label={label}>
+          {names.map((name) => (
+            <li key={name}>
+              <CategoryPill label={name} variant={variant} to={filterHref('/certificates', CERT_FACETS, name)} replace />
+            </li>
+          ))}
+        </CategoryPills>
+      </dd>
     </div>
   )
 }
@@ -53,6 +74,8 @@ export function CertificateDialog({ certificate, previous, next, onClose }: Prop
             <Row label="Name">{certificate.name}</Row>
             <Row label="Issuer">{issuerLine(certificate)}</Row>
             {certificate.issued && <Row label="Issued">{formatMonth(certificate.issued)}</Row>}
+            <PillRow label="Topic" names={certCategoriesIn('topic', certificate.categories)} variant="filled" />
+            <PillRow label="Type" names={certCategoriesIn('type', certificate.categories)} variant="outline" />
             {certificate.verifyUrl && <Row label="Credential">Verified by issuer</Row>}
           </dl>
           {certificate.verifyUrl && (
