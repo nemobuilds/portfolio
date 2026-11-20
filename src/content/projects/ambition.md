@@ -10,4 +10,15 @@ homeOrder: 5
 stack: [JavaScript, HTML, CSS]
 repoUrl: https://github.com/nemobuilds/ambition.github.io
 liveUrl: https://ambition-beta.vercel.app/
+
+thumbnail: /images/projects/ambition/landing.webp
+cover:
+  image: /images/projects/ambition/landing.webp
+gallery:
+    - src: /images/projects/ambition/create.webp
+      caption: Create Groups page
+    - src: /images/projects/ambition/mbti.webp
+      caption: Learn MBTI page
+    - src: /images/projects/ambition/about.webp
+      caption: About page
 ---

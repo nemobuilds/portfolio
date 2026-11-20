@@ -10,4 +10,11 @@ homeOrder: 3
 stack: [FastAPI, React, PostgreSQL, LangChain, TypeScript]
 repoUrl: https://github.com/jnrgxx/lore-of-legends
 liveUrl: https://lore-of-legends-pi.vercel.app/
+
+thumbnail: /images/projects/lore-of-legends/landing.webp
+cover:
+  image: /images/projects/lore-of-legends/landing.webp
+gallery:
+    - src: /images/projects/lore-of-legends/story.webp
+      caption: Generated Story from theme
 ---
