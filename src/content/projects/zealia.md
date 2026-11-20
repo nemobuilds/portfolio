@@ -5,7 +5,22 @@ description: Team composition and role assignment web application for computing 
 category: Full-Stack Applications
 order: 4
 home: true
-homeOrder: 4
-stack: [PHP, JavaScript, Tailwind CSS]
+homeOrder: 2
+stack: [PHP, Composer, JavaScript, HTML, Tailwind CSS]
 repoUrl: https://github.com/jnrgxx/Zealia
+
+extraLinks:
+  - label: AVP
+    url: https://youtu.be/iL5rgT7N5IM
+
+thumbnail: /images/projects/zealia/thumb.webp
+cover:
+  image: /images/projects/zealia/thumb.webp
+gallery:
+    - src: /images/projects/zealia/landing-guide.webp
+      caption: The landing & about page
+    - src: /images/projects/zealia/dashboard.webp
+      caption: The rooms dashboard for students & teachers
+    - src: /images/projects/zealia/admin-dashboard.webp
+      caption: The admin dashboard
 ---

@@ -5,7 +5,7 @@ description: "Designed and developed an Amazon S3-inspired object storage servic
 category: Backend & APIs
 order: 2
 home: true
-homeOrder: 2
+homeOrder: 4
 stack: [Java, Spring Boot, Spring Data JPA, PostgreSQL, Swagger]
 repoUrl: https://github.com/jnrgxx/object-storage-service
 ---
