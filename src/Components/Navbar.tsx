@@ -61,7 +61,7 @@ export function Navbar({ surface, current, backLink, hideThemeToggle }: Props) {
             <BackLink />
           </div>
         )}
-        <div className={`pointer-events-auto rounded-[24px] ${pillSurface} ${open ? 'w-full max-w-[420px]' : ''}`}>
+        <div ref={card} className={`pointer-events-auto rounded-[24px] ${pillSurface} ${open ? 'w-full max-w-[420px]' : ''}`}>
           <div className="flex items-center gap-1 py-1 pl-2 pr-2">
             <Link
               to="/"
@@ -94,30 +94,36 @@ export function Navbar({ surface, current, backLink, hideThemeToggle }: Props) {
 
             {!isHome && !hideThemeToggle && <ThemeToggle />}
 
-            <button
-              ref={menuButton}
-              type="button"
-              aria-label="Open menu"
-              aria-expanded={open}
-              aria-controls="site-menu"
-              onClick={() => setOpen(true)}
-              className={`inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-inherit min-[760px]:hidden ${open ? 'hidden' : ''}`}
-            >
-              <Icon name="menu" />
-            </button>
-          </div>
-
-          {open && (
-            <div id="site-menu" ref={card} className="flex flex-col gap-1 px-2 pb-3">
+            {/* One button slot: the menu icon when closed, the close icon (pushed right, same row as the brand) when open. */}
+            {open ? (
               <button
                 ref={closeButton}
                 type="button"
                 aria-label="Close menu"
+                aria-expanded={open}
+                aria-controls="site-menu"
                 onClick={() => setOpen(false)}
-                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center self-end rounded-full border-0 bg-transparent text-inherit"
+                className="ml-auto inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-inherit"
               >
                 <Icon name="close" />
               </button>
+            ) : (
+              <button
+                ref={menuButton}
+                type="button"
+                aria-label="Open menu"
+                aria-expanded={open}
+                aria-controls="site-menu"
+                onClick={() => setOpen(true)}
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-inherit min-[760px]:hidden"
+              >
+                <Icon name="menu" />
+              </button>
+            )}
+          </div>
+
+          {open && (
+            <div id="site-menu" className="flex flex-col gap-1 px-2 pb-3">
               {links.map((l) => {
                 const isCurrent = !isHome && current === l.key
                 return (
