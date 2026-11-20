@@ -152,11 +152,13 @@ describe('ProjectsPage', () => {
     )
   })
 
-  test('card says Details when there is no case study', () => {
+  test('each card says Case study when it has one, else Details', () => {
     page()
     for (const c of cards()) {
-      expect(within(c).queryByText('Case study')).toBeNull()
-      expect(within(c).getByText('Details')).toBeInTheDocument()
+      const name = within(c).getByRole('heading').textContent
+      const hasCaseStudy = !!projects.find((p) => p.name === name)?.caseStudy
+      expect(within(c).queryByText('Case study') !== null).toBe(hasCaseStudy)
+      expect(within(c).queryByText('Details') !== null).toBe(!hasCaseStudy)
     }
   })
 

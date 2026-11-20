@@ -177,7 +177,7 @@ describe('top crop for project images', () => {
 
 describe('CaseStudyView', () => {
   test('short template shows the description', () => {
-    at(<CaseStudyView project={base} />)
+    at(<CaseStudyView project={{ ...base, caseStudy: undefined }} />)
     expect(screen.getByRole('heading', { level: 2, name: 'What it is' })).toBeInTheDocument()
     expect(screen.getByText(base.description ?? base.summary)).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Problem' })).toBeNull()
