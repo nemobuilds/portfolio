@@ -7,6 +7,7 @@ import { ThemeProvider } from '../theme/ThemeProvider'
 import CertificatesPage from './CertificatesPage'
 import CertificateCard from '../Components/CertificateCard'
 import { certificates } from '../content/certifications'
+import { countWord } from '../content/count'
 
 function Where() {
   const l = useLocation()
@@ -40,7 +41,7 @@ describe('CertificatesPage', () => {
   test('header, count line and title', () => {
     page()
     expect(screen.getByRole('heading', { level: 1, name: 'Certifications' })).toBeInTheDocument()
-    expect(screen.getByText('Three certifications. Each one links to its issuer.')).toBeInTheDocument()
+    expect(screen.getByText(`${countWord(certificates.length)} certifications. Each one links to its issuer.`)).toBeInTheDocument()
     expect(document.title).toBe('Certifications · John Rogee Turqueza')
   })
 
@@ -55,17 +56,19 @@ describe('CertificatesPage', () => {
     expect(verify).toHaveAttribute('rel', 'noreferrer')
   })
 
-  test('PCAP card has no date line and sorts last', () => {
+  test('the oldest card sorts last, and PCAP links to LinkedIn', () => {
     page()
     const cards = screen.getAllByRole('article')
-    expect(within(cards.at(-1)!).getByRole('heading', { name: 'PCAP: Programming Essentials in Python' })).toBeInTheDocument()
-    expect(within(cards.at(-1)!).queryByText(/\b(19|20)\d\d\b/)).toBeNull()
-    expect(within(cards.at(-1)!).getByRole('link', { name: /View on LinkedIn/ })).toBeInTheDocument()
+    expect(within(cards.at(-1)!).getByRole('heading', { name: 'Integrated Programming Technologies 1' })).toBeInTheDocument()
+    expect(within(cards.at(-1)!).getByText('December 2022')).toBeInTheDocument()
+    expect(within(cardFor('PCAP: Programming Essentials in Python')).getByRole('link', { name: /View on LinkedIn/ })).toBeInTheDocument()
   })
 
   test('card without scan shows a fallback panel with the issuer', () => {
     page()
-    expect(within(cardFor('Introduction to Software Engineering')).getByText('IBM')).toBeInTheDocument()
+    const card = cardFor('AI Skills Fest 2026')
+    expect(within(card).queryByRole('img', { name: /^Scan of/ })).toBeNull()
+    expect(within(card).getAllByText('Microsoft').length).toBeGreaterThan(1)
   })
 
   test('/certificates/ccst-cybersecurity opens the dialog directly', () => {
@@ -95,7 +98,7 @@ describe('CertificatesPage', () => {
     page('/certificates', ['/start', '/certificates'])
     await userEvent.click(within(cardFor('CCST Cybersecurity')).getByRole('link', { name: 'CCST Cybersecurity' }))
     await userEvent.click(within(screen.getByRole('dialog')).getByRole('link', { name: /Next/ }))
-    expect(screen.getByTestId('where')).toHaveTextContent('/certificates/intro-software-engineering')
+    expect(screen.getByTestId('where')).toHaveTextContent('/certificates/innolympics-2025')
     await userEvent.keyboard('{Escape}')
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(screen.getByTestId('where')).toHaveTextContent(/^\/certificates$/)

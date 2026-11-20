@@ -21,9 +21,15 @@ test('every project stack name has a logo except the known chain and code items'
   for (const p of projects) for (const s of p.stack) expect(techLogo(s).kind, s).toBe(special[s] ?? 'logo')
 })
 test('certificates sort newest first, undated last', () =>
-  expect(certificates.map(c => c.id)).toEqual(['ccst-cybersecurity', 'intro-software-engineering', 'pcap']))
+  expect(certificates.map(c => c.id)).toEqual([
+    'az-900', 'ai-skills-fest-2026', 'understanding-data-engineering',
+    'intermediate-python', 'containerization-virtualization',
+    'python-for-developers', 'intro-python', 'ccst-cybersecurity', 'innolympics-2025',
+    'intro-software-engineering', 'software-engineering-essentials',
+    'intro-packet-tracer', 'pcap', 'integrated-programming-technologies-1',
+  ]))
 test('home certificates by homeOrder', () =>
-  expect(homeCertificates.map(c => c.id)).toEqual(['ccst-cybersecurity', 'intro-software-engineering', 'pcap']))
+  expect(homeCertificates.map(c => c.id)).toEqual(['az-900', 'ccst-cybersecurity', 'pcap']))
 test('getCertificate', () => {
   expect(getCertificate('pcap')?.issuer).toMatch(/OpenEDG/)
   expect(getCertificate('nope')).toBeUndefined()

@@ -1,4 +1,4 @@
-export type VerifyType = 'credly' | 'coursera' | 'linkedin' | 'other'
+export type VerifyType = 'credly' | 'coursera' | 'linkedin' | 'microsoft' | 'other'
 
 export type Certificate = {
   id: string
@@ -9,21 +9,36 @@ export type Certificate = {
   issued?: string // YYYY-MM
   verifyUrl?: string
   verifyType?: VerifyType
-  scan?: string
+  scan?: string // relative path to image
   home?: boolean
   homeOrder?: number
 }
 
 const all: Certificate[] = [
   {
+    id: 'az-900',
+    name: 'Microsoft Azure Fundamentals',
+    shortName: 'AZ-900',
+    issuer: 'Microsoft',
+    via: 'Pearson Vue',
+    issued: '2026-09',
+    verifyType: 'microsoft',
+    verifyUrl: 'https://learn.microsoft.com/en-us/users/johnrogeeturqueza-6273/credentials/981bbfa4739a2e14',
+    scan: '/images/certifications/azure-fundamentals.webp',
+    home: true,
+    homeOrder: 1,
+  },
+  {
     id: 'pcap',
     name: 'PCAP: Programming Essentials in Python',
     issuer: 'Cisco Networking Academy & OpenEDG Python Institute',
+    issued: '2022-12',
     verifyType: 'linkedin',
     verifyUrl:
       'https://www.linkedin.com/in/jrogeet/details/certifications/1734626606926/single-media-viewer?type=DOCUMENT&profileId=ACoAAEJd4MEBcNifXTtCX7fSTLw2-bqBBsTXlC0&lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_certifications_details%3BkUL923axQFCs%2FlHOFgF%2Bxg%3D%3D',
     home: true,
     homeOrder: 3,
+    scan: '/images/certifications/pcap-programming-essentials-python.webp',
   },
   {
     id: 'ccst-cybersecurity',
@@ -35,7 +50,8 @@ const all: Certificate[] = [
     verifyType: 'credly',
     verifyUrl: 'https://www.credly.com/badges/bc2ec00f-6132-4eaf-ab01-6a4c0a89d89c/linked_in_profile',
     home: true,
-    homeOrder: 1,
+    homeOrder: 2,
+    scan: '/images/certifications/ccst-cybersecurity.webp',
   },
   {
     id: 'intro-software-engineering',
@@ -45,8 +61,91 @@ const all: Certificate[] = [
     issued: '2024-12',
     verifyType: 'coursera',
     verifyUrl: 'https://www.coursera.org/account/accomplishments/verify/MIOS4AP9U8C6',
-    home: true,
-    homeOrder: 2,
+    scan: '/images/certifications/ibm-intro-soft-engineering.webp',
+  },
+  {
+    id: 'ai-skills-fest-2026',
+    name: 'AI Skills Fest 2026',
+    issuer: 'Microsoft',
+    issued: '2026-06',
+    verifyType: 'credly',
+    verifyUrl: 'https://www.credly.com/badges/8a23b4ae-ef2c-4f0c-bb6d-27ca191ce913/linked_in_profile',
+  },
+  {
+    id: 'understanding-data-engineering',
+    name: 'Understanding Data Engineering',
+    issuer: 'DataCamp',
+    issued: '2025-09',
+    verifyType: 'other',
+    verifyUrl: 'https://www.datacamp.com/completed/statement-of-accomplishment/course/5d4813326af1fbe33bf167c365596b4bff8f2bc7',
+    scan: '/images/certifications/datacamp-understanding-data-engineering.webp',
+  },
+  {
+    id: 'intermediate-python',
+    name: 'Intermediate Python',
+    issuer: 'DataCamp',
+    issued: '2025-07',
+    verifyType: 'other',
+    verifyUrl: 'https://www.datacamp.com/completed/statement-of-accomplishment/course/326fce20cf7b5d68a747db9e4dea6eea98efc1c6',
+    scan: '/images/certifications/datacamp-intermediate-python.webp',
+  },
+  {
+    id: 'containerization-virtualization',
+    name: 'Containerization and Virtualization Concepts',
+    issuer: 'DataCamp',
+    issued: '2025-07',
+    verifyType: 'other',
+    verifyUrl: 'https://www.datacamp.com/completed/statement-of-accomplishment/course/b0998eb702f50b388e3aeaab84ada6f6422d53f6',
+    scan: '/images/certifications/datacamp-containerization-and-virtualization.webp',
+  },
+  {
+    id: 'python-for-developers',
+    name: 'Introduction to Python for Developers',
+    issuer: 'DataCamp',
+    issued: '2025-06',
+    verifyType: 'other',
+    verifyUrl: 'https://www.datacamp.com/completed/statement-of-accomplishment/course/6ef59e9e6c049624ec46f0d531525b099e57ebd8',
+    scan: '/images/certifications/datacamp-intro-to-python-for-devs.webp',
+  },
+  {
+    id: 'intro-python',
+    name: 'Introduction to Python',
+    issuer: 'DataCamp',
+    issued: '2025-06',
+    verifyType: 'other',
+    verifyUrl: 'https://www.datacamp.com/completed/statement-of-accomplishment/course/bb2a7a120e3a20eee05789327a5ad2eb8c3d7696',
+    scan: '/images/certifications/datacamp-intro-to-python.webp',
+  },
+  {
+    id: 'innolympics-2025',
+    name: 'InnOlympics 2025 Hackathon, Certificate of Participation',
+    shortName: 'InnOlympics 2025',
+    issuer: 'Google Developer Groups on Campus PLM',
+    issued: '2025-01',
+    scan: '/images/certifications/innolympics-cert-of-participation.webp',
+  },
+  {
+    id: 'software-engineering-essentials',
+    name: 'Software Engineering Essentials',
+    issuer: 'Coursera',
+    issued: '2024-12',
+    verifyType: 'credly',
+    verifyUrl: 'https://www.credly.com/badges/3abafac8-749a-4027-99c7-db5d285b3abc/linked_in_profile',
+    scan: '/images/certifications/ibm-softeng-essentials.webp',
+  },
+  {
+    id: 'intro-packet-tracer',
+    name: 'Introduction to Packet Tracer',
+    issuer: 'Cisco Networking Academy',
+    issued: '2023-12',
+    scan: '/images/certifications/intro-to-packet-tracer.webp',
+  },
+  {
+    id: 'integrated-programming-technologies-1',
+    name: 'Integrated Programming Technologies 1',
+    issuer: 'CodeChum',
+    issued: '2022-12',
+    scan: '/images/certifications/codechum-integrated-programming.webp',
   },
 ]
 
@@ -72,6 +171,7 @@ export function verifyLabel(t?: VerifyType): string {
     case 'credly': return 'Verify on Credly'
     case 'coursera': return 'Verify on Coursera'
     case 'linkedin': return 'View on LinkedIn'
+    case 'microsoft': return 'Verify on Microsoft Learn'
     default: return 'View credential'
   }
 }
