@@ -35,7 +35,7 @@ test('certificate categories', () => {
     'python-for-developers': ['Programming', 'Course'],
     'intro-python': ['Programming', 'Data', 'Course'],
     'ccst-cybersecurity': ['Security & Networking', 'Certification'],
-    'innolympics-2025': ['Event'],
+    'innolympics-2025': ['Software Engineering', 'Event'],
     'intro-software-engineering': ['Software Engineering', 'Course'],
     'software-engineering-essentials': ['Software Engineering', 'Course'],
     'intro-packet-tracer': ['Security & Networking', 'Course'],

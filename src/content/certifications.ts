@@ -150,7 +150,7 @@ const all: Certificate[] = [
     id: 'innolympics-2025',
     name: 'InnOlympics 2025 Hackathon, Certificate of Participation',
     shortName: 'InnOlympics 2025',
-    categories: ['Event'],
+    categories: ['Software Engineering', 'Event'],
     issuer: 'Google Developer Groups on Campus PLM',
     issued: '2025-01',
     scan: '/images/certifications/innolympics-cert-of-participation.webp',
