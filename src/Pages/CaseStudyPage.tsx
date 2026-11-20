@@ -7,7 +7,6 @@ import { FactsRail } from '../Components/FactsRail'
 import { StorySection } from '../Components/StorySection'
 import { Gallery } from '../Components/Gallery'
 import { NextProjectLink } from '../Components/NextProjectLink'
-import { SmartImage } from '../Components/SmartImage'
 import { getProject, nextProject } from '../content/projects'
 import type { Project } from '../content/projects'
 import NotFoundPage from './NotFoundPage'
@@ -59,31 +58,48 @@ export function CaseStudyView({ project }: { project: Project }) {
       <section className="mx-auto w-full max-w-[1200px] px-6">
         <div className="grid grid-cols-1 items-start gap-10 min-[900px]:grid-cols-[320px_minmax(0,1fr)]">
           <FactsRail project={project} />
-          <article className={sheet}>
-            {cs ? (
-              <>
-                <StorySection title="Problem" html={cs.problem} />
-                <StorySection title="Approach" html={cs.approach}>
-                  {project.approachDiagram && (
-                    <div className="overflow-hidden rounded-md">
-                      <SmartImage src={project.approachDiagram} alt={`${name} approach diagram`} aspect="16/9" crop="top" />
-                    </div>
-                  )}
+          {/* Main column: the case study, then the gallery right under it, so a short
+              case study leaves no empty space beside the sticky facts rail. */}
+          <div className="flex min-w-0 flex-col gap-10">
+            <article className={sheet}>
+              {cs ? (
+                <>
+                  <StorySection title="Problem" html={cs.problem} />
+                  <StorySection title="Approach" html={cs.approach}>
+                    {project.approachDiagram && (
+                      // Diagrams are never cropped: a fixed height, the width follows the image's own ratio.
+                      <a
+                        href={project.approachDiagram}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Open full image: ${name} approach diagram`}
+                        className="block self-start"
+                      >
+                        <img
+                          src={project.approachDiagram}
+                          alt={`${name} approach diagram`}
+                          loading="lazy"
+                          data-fit="contain"
+                          className="block h-[320px] w-auto max-w-full rounded-md object-contain min-[760px]:h-[420px]"
+                        />
+                      </a>
+                    )}
+                  </StorySection>
+                  <StorySection title="What I built" html={cs.built} />
+                  {cs.results && <StorySection title="Results" html={cs.results} />}
+                  {cs.learned && <StorySection title="Learned" html={cs.learned} />}
+                </>
+              ) : (
+                <StorySection title="What it is">
+                  <p className="m-0">{description ?? summary}</p>
                 </StorySection>
-                <StorySection title="What I built" html={cs.built} />
-                {cs.results && <StorySection title="Results" html={cs.results} />}
-                {cs.learned && <StorySection title="Learned" html={cs.learned} />}
-              </>
-            ) : (
-              <StorySection title="What it is">
-                <p className="m-0">{description ?? summary}</p>
-              </StorySection>
-            )}
-          </article>
+              )}
+            </article>
+            <Gallery items={project.gallery} placement="column" />
+          </div>
         </div>
       </section>
 
-      <Gallery items={project.gallery} />
       <NextProjectLink project={next} />
     </Layout>
   )

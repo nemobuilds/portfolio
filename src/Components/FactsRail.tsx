@@ -25,7 +25,7 @@ export function FactsRail({ project }: { project: Project }) {
   return (
     <aside
       aria-label="Project facts"
-      className="surface-slate flex flex-col rounded-[10px] p-[26px] shadow-[0_26px_36px_-18px_rgba(8,14,50,0.45)] min-[900px]:sticky min-[900px]:top-6"
+      className="surface-slate flex flex-col rounded-[10px] p-[26px] shadow-[0_26px_36px_-18px_rgba(8,14,50,0.45)] min-[900px]:sticky min-[900px]:top-[88px]"
     >
       {/* Order: Stack and Links first (what it is built with, where to see it), then the category groups. */}
       {stack.length > 0 && (

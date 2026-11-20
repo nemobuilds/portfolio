@@ -166,12 +166,46 @@ describe('Gallery', () => {
   })
 })
 
+describe('project page layout', () => {
+  test('the gallery sits in the main column under the case study, after the facts rail', () => {
+    at(<CaseStudyView project={{ ...base, caseStudy: undefined, gallery: [{ src: '/images/projects/zealia/a.webp', caption: 'Shot A' }] }} />)
+    const rail = screen.getByRole('complementary', { name: 'Project facts' })
+    const gallery = screen.getByRole('region', { name: 'Gallery' })
+    const article = screen.getByRole('heading', { name: 'What it is' }).closest('article')!
+    expect(gallery).toHaveAttribute('data-placement', 'column')
+    expect(gallery.parentElement).toBe(article.parentElement)
+    expect(rail.parentElement).toBe(article.parentElement!.parentElement)
+    expect(rail.compareDocumentPosition(article) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(article.compareDocumentPosition(gallery) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  test('the facts rail sticks below the floating navbar on wide screens', () => {
+    at(<CaseStudyView project={base} />)
+    expect(screen.getByRole('complementary', { name: 'Project facts' }).className).toContain('min-[900px]:top-[88px]')
+  })
+})
+
 describe('top crop for project images', () => {
   test('the cover keeps the top of the screenshot', () => {
     at(<CaseStudyView project={{ ...base, cover: { image: '/images/projects/zealia/thumb.webp' } }} />)
     const img = screen.getByRole('img', { name: `${base.name} screenshot` })
     expect(img).toHaveAttribute('data-crop', 'top')
     expect(img.className).toContain('object-top')
+  })
+
+  test('the approach diagram is never cropped: fixed height, own ratio, links to the full file', () => {
+    at(<CaseStudyView project={full} />)
+    expect(full.approachDiagram).toBeDefined()
+    const img = screen.getByRole('img', { name: `${base.name} approach diagram` })
+    expect(img).toHaveAttribute('data-fit', 'contain')
+    expect(img.className).toContain('object-contain')
+    expect(img.className).toContain('h-[320px]')
+    expect(img.className).toContain('w-auto')
+    expect(img.className).not.toContain('object-cover')
+    expect(screen.getByRole('link', { name: `Open full image: ${base.name} approach diagram` })).toHaveAttribute(
+      'href',
+      full.approachDiagram,
+    )
   })
 })
 

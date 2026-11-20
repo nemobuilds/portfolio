@@ -1,22 +1,38 @@
 import { Icon } from './Icon'
 import { SmartImage } from './SmartImage'
 
-// One image fills the row; two or more go two to a row on wide screens, one on phones.
-const cols = {
+// Standalone (full page width): one image fills the row; two or more go two to a row, one on phones.
+const pageCols = {
   1: 'grid-cols-1',
   2: 'grid-cols-1 min-[760px]:grid-cols-2',
+} as const
+
+// In the project page's main column (beside the facts rail from 900px): the column
+// is only ~500-700px wide between 900px and 1100px, so one per row there, two above.
+const columnCols = {
+  1: 'grid-cols-1',
+  2: 'grid-cols-1 min-[760px]:grid-cols-2 min-[900px]:grid-cols-1 min-[1100px]:grid-cols-2',
 } as const
 
 /**
  * Each shot sits in a 16:9 frame cropped from the top by CSS only. The file is
  * never cut: the frame is a link that opens the full original in a new tab.
  */
-export function Gallery({ items }: { items: { src: string; caption: string }[] }) {
+export function Gallery({
+  items,
+  placement = 'page',
+}: {
+  items: { src: string; caption: string }[]
+  /** "column": sits inside the project page's main column, under the case study. */
+  placement?: 'page' | 'column'
+}) {
   if (items.length === 0) return null
   const n = (items.length >= 2 ? 2 : 1) as 1 | 2
+  const cols = placement === 'column' ? columnCols[n] : pageCols[n]
+  const wrap = placement === 'column' ? '' : 'mx-auto w-full max-w-[1200px] px-6 pt-[72px]'
   return (
-    <section className="mx-auto w-full max-w-[1200px] px-6 pt-[72px]" aria-label="Gallery">
-      <div data-columns={n} className={`grid gap-7 ${cols[n]}`}>
+    <section className={wrap} aria-label="Gallery" data-placement={placement}>
+      <div data-columns={n} className={`grid gap-7 ${cols}`}>
         {items.map((it) => (
           <figure
             key={it.src}
