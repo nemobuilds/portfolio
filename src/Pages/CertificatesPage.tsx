@@ -8,6 +8,7 @@ import NotFoundPage from './NotFoundPage'
 import { CERT_FACETS, certificates, getCertificate, type Certificate } from '../content/certifications'
 import { countWord } from '../content/count'
 import { facetViews, filterItems, pickedList, type Accessors } from '../filter/filter'
+import { byMonth, byText, keepOrder, reverse, sortItems, type SortConfig } from '../filter/sort'
 import { useFilterParams } from '../filter/useFilterParams'
 
 const SITE = 'John Rogee Turqueza'
@@ -15,6 +16,20 @@ const SITE = 'John Rogee Turqueza'
 const access: Accessors<Certificate> = {
   text: (c) => [c.name, c.shortName ?? '', issuerLine(c)].join(' '),
   categories: (c) => c.categories,
+}
+
+// `certificates` arrives newest first (undated last), so Newest keeps that order
+// and it is the tie-break for the rest. A to Z uses the title on the card.
+const title = (c: Certificate) => c.shortName ?? c.name
+const CERT_SORT: SortConfig<Certificate> = {
+  defaultKey: 'newest',
+  options: [
+    { key: 'newest', label: 'Newest first', compare: keepOrder },
+    { key: 'oldest', label: 'Oldest first', compare: byMonth((c: Certificate) => c.issued, 'oldest') },
+    { key: 'az', label: 'A to Z', compare: byText(title) },
+    { key: 'za', label: 'Z to A', compare: reverse(byText(title)) },
+    { key: 'issuer', label: 'Issuer A to Z', compare: byText((c: Certificate) => c.issuer) },
+  ],
 }
 
 export default function CertificatesPage() {
@@ -27,7 +42,7 @@ export default function CertificatesPage() {
   const openedFromCard = useRef(false)
   const heading = useRef<HTMLHeadingElement>(null)
   const lastId = useRef<string | undefined>(id)
-  const { state, setQuery, toggle, clearAll } = useFilterParams(CERT_FACETS)
+  const { state, sort, setQuery, toggle, clearAll, setSort } = useFilterParams(CERT_FACETS, CERT_SORT)
 
   useEffect(() => {
     if (missing) return
@@ -54,7 +69,7 @@ export default function CertificatesPage() {
   if (missing) return <NotFoundPage />
 
   const index = certificate ? certificates.indexOf(certificate) : -1
-  const shown = filterItems(certificates, state, CERT_FACETS, access)
+  const shown = sortItems(filterItems(certificates, state, CERT_FACETS, access), CERT_SORT, sort)
 
   return (
     <Layout surface="sub" current="certifications">
@@ -91,6 +106,7 @@ export default function CertificatesPage() {
             onToggle={toggle}
             onClearSearch={() => setQuery('')}
             onClearAll={clearAll}
+            sort={{ options: CERT_SORT.options, value: sort, onChange: setSort }}
           >
             <div className="grid grid-cols-1 items-stretch gap-x-7 gap-y-10 min-[640px]:grid-cols-2">
               {shown.map((c) => (

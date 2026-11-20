@@ -50,6 +50,8 @@ export type Project = {
   summary: string
   description?: string
   categories: Category[]
+  /** Month the work started, YYYY-MM. Sorts Newest/Oldest first; undated projects go last. */
+  date?: string
   order: number
   home: boolean
   homeOrder?: number

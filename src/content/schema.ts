@@ -19,6 +19,11 @@ export const frontmatterSchema = z.object({
     .array(z.enum(CATEGORIES))
     .min(1)
     .refine((list) => new Set(list).size === list.length, 'must not list the same category twice'),
+  // A bare 2026-09 in YAML is a string, so no Date coercion is needed.
+  date: z
+    .string()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'must be YYYY-MM, for example 2026-09')
+    .optional(),
   order: z.number().int(),
   home: z.boolean().default(false),
   homeOrder: z.number().int().optional(),

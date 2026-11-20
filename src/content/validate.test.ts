@@ -79,6 +79,12 @@ test('the old single category field names the new field', () => {
   const old = 'name: A\nsummary: S\ncategory: Backend & APIs\norder: 1\nstack: [React]'
   expect(() => validateProjects({ '/x/a.md': ok(old) }, yes)).toThrow(/a\.md.*"category" was replaced by "categories"/)
 })
+test('date is optional and must be YYYY-MM', () => {
+  expect(validateProjects({ '/x/a.md': ok(base) }, yes)[0].date).toBeUndefined()
+  expect(validateProjects({ '/x/a.md': ok(base + '\ndate: 2026-09') }, yes)[0].date).toBe('2026-09')
+  expect(() => validateProjects({ '/x/a.md': ok(base + '\ndate: 2026-13') }, yes)).toThrow(/a\.md.*date.*YYYY-MM/)
+  expect(() => validateProjects({ '/x/a.md': ok(base + '\ndate: 2026-09-21') }, yes)).toThrow(/a\.md.*date/)
+})
 test('no body means no caseStudy', () => {
   expect(validateProjects({ '/x/a.md': ok(base) }, yes)[0].caseStudy).toBeUndefined()
 })

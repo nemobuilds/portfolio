@@ -182,11 +182,47 @@ type LayoutProps = {
   onToggle(name: string): void
   onClearSearch(): void
   onClearAll(): void
+  sort?: SortProps
   children: ReactNode
 }
 
+type SortProps = {
+  options: readonly { key: string; label: string }[]
+  value: string
+  onChange(key: string): void
+}
+
+/** Native select, so phones open their own picker. Sits at the right end of the result line. */
+export function SortSelect({ options, value, onChange }: SortProps) {
+  const id = useId()
+  return (
+    <div className="ml-auto flex items-center gap-2">
+      <label htmlFor={id} className="text-[14px] font-semibold text-[var(--text-secondary)]">
+        Sort
+      </label>
+      <span className="relative inline-flex items-center">
+        <select
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="surface-slate min-h-11 cursor-pointer appearance-none rounded-[7px] py-0 pr-9 pl-3 text-[14px] font-semibold text-[var(--text)]"
+        >
+          {options.map((o) => (
+            <option key={o.key} value={o.key}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <span className="pointer-events-none absolute right-3 text-[var(--text)]">
+          <Icon name="chevron-down" size={14} />
+        </span>
+      </span>
+    </div>
+  )
+}
+
 /** Option B: filter sidebar on wide screens, a Filters button + bottom sheet on phones. */
-export function FilterLayout({ noun, singular, views, state, picked, total, shown, onToggle, onClearSearch, onClearAll, children }: LayoutProps) {
+export function FilterLayout({ noun, singular, views, state, picked, total, shown, onToggle, onClearSearch, onClearAll, sort, children }: LayoutProps) {
   const [sheetOpen, setSheetOpen] = useState(false)
   const filtersButton = useRef<HTMLButtonElement>(null)
   const wasOpen = useRef(false)
@@ -249,6 +285,7 @@ export function FilterLayout({ noun, singular, views, state, picked, total, show
               Clear all
             </button>
           )}
+          {sort && <SortSelect {...sort} />}
         </div>
         {shown === 0 ? (
           <EmptyState
