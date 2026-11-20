@@ -19,7 +19,7 @@ period: July to December 2024 (BSCS thesis)
 
 thumbnail: /images/projects/zealia/thumb.webp
 cover:
-  image: /images/projects/zealia/thumb.webp
+  image: /images/projects/zealia/cover.webp
 approachDiagram: /images/projects/zealia/diagram.webp
 gallery:
     - src: /images/projects/zealia/landing-guide.webp
