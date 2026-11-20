@@ -2,24 +2,24 @@ import { expect, test } from 'vitest'
 import { validateProjects } from './validate'
 
 const ok = (fm: string, body = '') => `---\n${fm}\n---\n${body}`
-const base = 'name: A\nsummary: S\ncategory: Full-Stack Applications\norder: 1\nstack: [React]'
+const base = 'name: A\nsummary: S\ncategories: [Full-Stack Applications]\norder: 1\nstack: [React]'
 const yes = () => true
 
 test('slug comes from the file name', () => {
   expect(validateProjects({ '/x/my-app.md': ok(base) }, yes)[0].slug).toBe('my-app')
 })
 test('missing summary names file and field', () => {
-  expect(() => validateProjects({ '/x/a.md': ok('name: A\ncategory: Full-Stack Applications\norder: 1\nstack: [React]') }, yes))
+  expect(() => validateProjects({ '/x/a.md': ok('name: A\ncategories: [Full-Stack Applications]\norder: 1\nstack: [React]') }, yes))
     .toThrow(/a\.md.*summary/)
 })
 test('duplicate homeOrder fails', () => {
-  const fm = (o: number) => `name: A\nsummary: S\ncategory: Full-Stack Applications\norder: ${o}\nstack: [React]\nhome: true\nhomeOrder: 1`
+  const fm = (o: number) => `name: A\nsummary: S\ncategories: [Full-Stack Applications]\norder: ${o}\nstack: [React]\nhome: true\nhomeOrder: 1`
   expect(() => validateProjects({ '/x/a.md': ok(fm(1)), '/x/b.md': ok(fm(2)) }, yes)).toThrow(/homeOrder/)
 })
 test('six home projects fail', () => {
   const files: Record<string, string> = {}
   for (let i = 1; i <= 6; i++) {
-    files[`/x/p${i}.md`] = ok(`name: A\nsummary: S\ncategory: Full-Stack Applications\norder: ${i}\nstack: [React]\nhome: true\nhomeOrder: ${i}`)
+    files[`/x/p${i}.md`] = ok(`name: A\nsummary: S\ncategories: [Full-Stack Applications]\norder: ${i}\nstack: [React]\nhome: true\nhomeOrder: ${i}`)
   }
   expect(() => validateProjects(files, yes)).toThrow(/at most 5/)
 })
@@ -64,6 +64,20 @@ test('body becomes caseStudy HTML', () => {
   expect(p.caseStudy?.problem).toContain('<strong>p</strong>')
   expect(p.caseStudy?.built).toContain('<li>b</li>')
   expect(p.caseStudy?.results).toBeUndefined()
+})
+test('categories is a list of known names', () => {
+  const fm = (cats: string) => `name: A\nsummary: S\ncategories: ${cats}\norder: 1\nstack: [React]`
+  expect(validateProjects({ '/x/a.md': ok(fm('[Backend & APIs, Open Source]')) }, yes)[0].categories).toEqual([
+    'Backend & APIs',
+    'Open Source',
+  ])
+  expect(() => validateProjects({ '/x/a.md': ok(fm('[Nope]')) }, yes)).toThrow(/a\.md.*categories/)
+  expect(() => validateProjects({ '/x/a.md': ok(fm('[]')) }, yes)).toThrow(/a\.md.*categories/)
+  expect(() => validateProjects({ '/x/a.md': ok(fm('[Academic, Academic]')) }, yes)).toThrow(/a\.md.*twice/)
+})
+test('the old single category field names the new field', () => {
+  const old = 'name: A\nsummary: S\ncategory: Backend & APIs\norder: 1\nstack: [React]'
+  expect(() => validateProjects({ '/x/a.md': ok(old) }, yes)).toThrow(/a\.md.*"category" was replaced by "categories"/)
 })
 test('no body means no caseStudy', () => {
   expect(validateProjects({ '/x/a.md': ok(base) }, yes)[0].caseStudy).toBeUndefined()

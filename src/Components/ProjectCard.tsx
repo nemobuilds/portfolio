@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { Project } from '../content/projects'
+import { categoriesIn } from '../content/types'
 import { Icon } from './Icon'
 import { SmartImage } from './SmartImage'
 import { StackList } from './StackList'
@@ -9,6 +10,7 @@ const linkBase =
 
 export default function ProjectCard({ project }: { project: Project }) {
   const to = `/projects/${project.slug}`
+  const focus = categoriesIn('focus', project.categories)
   return (
     <article className="surface-slate relative flex flex-col overflow-hidden rounded-[10px] shadow-[0_26px_36px_-18px_rgba(8,14,50,0.45)]">
       <SmartImage src={project.thumbnail} alt="" initial={project.name.charAt(0)} aspect="16/10" />
@@ -19,7 +21,7 @@ export default function ProjectCard({ project }: { project: Project }) {
           </Link>
         </h3>
         <p className="m-0 text-[15px] leading-normal text-[var(--text-secondary)] line-clamp-3">{project.summary}</p>
-        <span className="text-[13px] font-semibold text-[var(--text-secondary)]">{project.category}</span>
+        {focus.length > 0 && <span className="text-[13px] font-semibold text-[var(--text-secondary)]">{focus.join(' · ')}</span>}
         <StackList items={project.stack} limit={4} />
         <div className="mt-auto flex flex-wrap items-center gap-x-[18px] gap-y-1 pt-2">
           <Link to={to} className={`${linkBase} text-[var(--text)]`}>

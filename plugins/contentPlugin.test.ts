@@ -17,7 +17,7 @@ function fixture(name: string, raw: string): string {
   return dir
 }
 
-const fm = 'name: D\nsummary: S\ncategory: Full-Stack Applications\norder: 1\nstack: [React]'
+const fm = 'name: D\nsummary: S\ncategories: [Full-Stack Applications]\norder: 1\nstack: [React]'
 
 type Hooks = {
   resolveId: (id: string) => string | undefined

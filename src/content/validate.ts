@@ -70,6 +70,9 @@ export function validateProjects(
       throw new ContentError(`${file}: slug "${slug}" must match ^[a-z0-9-]+$`)
     }
     const { data, body } = parseFrontmatter(raw)
+    if (data && typeof data === 'object' && 'category' in data) {
+      throw new ContentError(`${file}: "category" was replaced by "categories", a list. Example: categories: [Backend & APIs, Open Source]`)
+    }
     const parsed = frontmatterSchema.safeParse(data ?? {})
     if (!parsed.success) throw new ContentError(formatIssues(file, parsed.error))
     const { private: isPrivate, ...fm } = parsed.data

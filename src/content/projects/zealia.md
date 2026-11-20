@@ -2,7 +2,7 @@
 name: Zealia
 summary: Builds research teams and assigns roles, using sorting algorithms.
 description: Team composition and role assignment web application for computing research using sorting algorithms.
-category: Full-Stack Applications
+categories: [Full-Stack Applications, Academic, Education & Teams]
 order: 4
 home: true
 homeOrder: 2

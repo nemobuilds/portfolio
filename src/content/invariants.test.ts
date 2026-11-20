@@ -5,7 +5,9 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { afterEach, describe, expect, test } from 'vitest'
 import { loadProjects, PROJECTS_DIR } from '../../plugins/contentPlugin'
-import { certificates, type Certificate } from './certifications'
+import { CERT_CATEGORIES, CERT_FACETS, certificates, type Certificate } from './certifications'
+import { PROJECT_FACETS } from './types'
+import { categorySlug } from '../filter/filter'
 import { projects } from './projects'
 import { techLogo } from './techLogos'
 import { tools } from './tools'
@@ -37,6 +39,12 @@ function certificateProblems(list: Certificate[], exists: (p: string) => boolean
     if (c.scan !== undefined && !(c.scan.startsWith('/') && exists(c.scan))) {
       problems.push(`${c.id}: scan file not found in public/ (${c.scan})`)
     }
+    const cats: string[] = c.categories ?? []
+    if (cats.length === 0) problems.push(`${c.id}: needs at least one category`)
+    for (const cat of cats) {
+      if (!(CERT_CATEGORIES as readonly string[]).includes(cat)) problems.push(`${c.id}: unknown category ${cat}`)
+    }
+    if (new Set(cats).size !== cats.length) problems.push(`${c.id}: lists a category twice`)
   }
   const home = list.filter(c => c.home)
   if (home.length > 3) problems.push(`at most 3 certifications may have home: true (found ${home.length})`)
@@ -58,25 +66,39 @@ describe('projects', () => {
 })
 
 describe('certifications', () => {
-  test('ids unique, at most 3 on home, homeOrder unique, issued is YYYY-MM, scan exists', () => {
+  test('ids unique, at most 3 on home, homeOrder unique, issued is YYYY-MM, scan exists, known categories', () => {
     expect(certificateProblems(certificates, inPublic)).toEqual([])
   })
 
   test('the check catches bad certifications', () => {
-    const bad: Certificate[] = [
-      { id: 'a', name: 'A', issuer: 'X', issued: '2025-4', home: true, homeOrder: 1 },
-      { id: 'a', name: 'B', issuer: 'X', scan: '/images/certificates/missing.webp', home: true, homeOrder: 1 },
-      { id: 'c', name: 'C', issuer: 'X', home: true, homeOrder: 2 },
-      { id: 'd', name: 'D', issuer: 'X', home: true, homeOrder: 3 },
-    ]
+    const bad = [
+      { id: 'a', name: 'A', issuer: 'X', categories: ['Cloud'], issued: '2025-4', home: true, homeOrder: 1 },
+      { id: 'a', name: 'B', issuer: 'X', categories: ['Cloud'], scan: '/images/certificates/missing.webp', home: true, homeOrder: 1 },
+      { id: 'c', name: 'C', issuer: 'X', categories: [], home: true, homeOrder: 2 },
+      { id: 'd', name: 'D', issuer: 'X', categories: ['Cloud', 'Nope', 'Cloud'], home: true, homeOrder: 3 },
+    ] as unknown as Certificate[]
     expect(certificateProblems(bad, () => false)).toEqual([
       'id a is used twice',
       'a: issued must be YYYY-MM',
       'a: scan file not found in public/ (/images/certificates/missing.webp)',
+      'c: needs at least one category',
+      'd: unknown category Nope',
+      'd: lists a category twice',
       'at most 3 certifications may have home: true (found 4)',
       'homeOrder 1 is used twice',
     ])
   })
+})
+
+test('filter groups: each category is in one group only, with a unique URL slug and a safe param name', () => {
+  for (const facets of [PROJECT_FACETS, CERT_FACETS] as const) {
+    const names = facets.flatMap((f) => [...f.options] as string[])
+    expect(new Set(names).size, 'a category is in two groups').toBe(names.length)
+    expect(new Set(names.map(categorySlug)).size, 'two categories share a URL slug').toBe(names.length)
+    const keys = facets.map((f) => f.key as string)
+    expect(keys.filter((k) => k === 'q' || k === 'category')).toEqual([])
+    expect(new Set(keys).size).toBe(keys.length)
+  }
 })
 
 test('every tool on the home page has a logo', () => {
@@ -100,7 +122,7 @@ describe('following docs/content-guide.md keeps the invariants', () => {
         '---',
         'name: My Project',
         'summary: A new project.',
-        'category: Full-Stack Applications',
+        'categories: [Full-Stack Applications, Open Source]',
         `order: ${maxOrder + 1}`,
         'stack: [React, Kafka, LangChain]',
         'repoUrl: https://github.com/example/my-project',
@@ -124,6 +146,7 @@ describe('following docs/content-guide.md keeps the invariants', () => {
     const added: Certificate = {
       id: 'my-new-cert',
       name: 'My New Certification',
+      categories: ['Cloud', 'Course'],
       issuer: 'Example Org',
       issued: '2026-10',
       verifyType: 'other',

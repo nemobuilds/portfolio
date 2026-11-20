@@ -10,14 +10,42 @@ import { site } from '../content/site'
 
 test('five projects, home order', () => {
   expect(projects).toHaveLength(5)
-  expect(homeProjects.map(p => p.slug)).toEqual(['tachyon', 'aws-s3-clone', 'lore-of-legends', 'zealia', 'ambition'])
+  expect(homeProjects.map(p => p.slug)).toEqual(['endpoint', 'zealia', 'lore-of-legends', 'aws-s3-clone', 'ambition'])
 })
 test('nextProject wraps to the first', () => {
-  expect(nextProject('ambition').slug).toBe('tachyon')
-  expect(nextProject('tachyon').slug).toBe('aws-s3-clone')
+  expect(nextProject('ambition').slug).toBe('endpoint')
+  expect(nextProject('endpoint').slug).toBe('aws-s3-clone')
+})
+test('project categories', () => {
+  expect(Object.fromEntries(projects.map(p => [p.slug, p.categories]))).toEqual({
+    endpoint: ['Full-Stack Applications', 'Backend & APIs', 'Personal Projects', 'Open Source', 'Developer Tools', 'Cloud & Infrastructure'],
+    'aws-s3-clone': ['Backend & APIs', 'Personal Projects', 'Experiments & Prototypes', 'Cloud & Infrastructure', 'Developer Tools'],
+    'lore-of-legends': ['Full-Stack Applications', 'AI & Automation', 'Personal Projects', 'Experiments & Prototypes', 'Games & Interactive'],
+    zealia: ['Full-Stack Applications', 'Academic', 'Education & Teams'],
+    ambition: ['Frontend & UI/UX', 'Academic', 'Education & Teams'],
+  })
+})
+test('certificate categories', () => {
+  expect(Object.fromEntries(certificates.map(c => [c.id, c.categories]))).toEqual({
+    'az-900': ['Cloud', 'Certification'],
+    'ai-skills-fest-2026': ['AI', 'Event'],
+    'understanding-data-engineering': ['Data', 'Course'],
+    'intermediate-python': ['Programming', 'Data', 'Course'],
+    'containerization-virtualization': ['DevOps & Containers', 'Cloud', 'Course'],
+    'python-for-developers': ['Programming', 'Course'],
+    'intro-python': ['Programming', 'Data', 'Course'],
+    'ccst-cybersecurity': ['Security & Networking', 'Certification'],
+    'innolympics-2025': ['Software Engineering', 'Event'],
+    'intro-software-engineering': ['Software Engineering', 'Course'],
+    'software-engineering-essentials': ['Software Engineering', 'Course'],
+    'intro-packet-tracer': ['Security & Networking', 'Course'],
+    pcap: ['Programming', 'Course'],
+    'integrated-programming-technologies-1': ['Programming', 'Course'],
+  })
+  expect(getCertificate('software-engineering-essentials')).toMatchObject({ issuer: 'IBM', via: 'Coursera' })
 })
 test('every project stack name has a logo except the known chain and code items', () => {
-  const special: Record<string, string> = { LangChain: 'chain', 'Spring Data JPA': 'code' }
+  const special: Record<string, string> = { LangChain: 'chain', 'Spring Data JPA': 'code', 'Next.js': 'code', Composer: 'code' }
   for (const p of projects) for (const s of p.stack) expect(techLogo(s).kind, s).toBe(special[s] ?? 'logo')
 })
 test('certificates sort newest first, undated last', () =>

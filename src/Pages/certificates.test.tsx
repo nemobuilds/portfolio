@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom'
 import { Routes, Route } from 'react-router-dom'
@@ -34,6 +34,9 @@ function page(path = '/certificates', entries?: string[]) {
   )
 }
 
+const box = (name: RegExp) =>
+  within(screen.getByRole('complementary', { name: 'Filter certifications' })).getByRole('checkbox', { name })
+
 const cardFor = (name: string) =>
   screen.getAllByRole('article').find((c) => within(c).queryByRole('heading', { name }))!
 
@@ -45,25 +48,49 @@ describe('CertificatesPage', () => {
     expect(document.title).toBe('Certifications · John Rogee Turqueza')
   })
 
-  test('filter buttons follow the category order and hide empty ones', () => {
+  test('the sidebar has Topic and Type groups in order, each box with a count', () => {
     page()
-    const radios = within(screen.getByRole('radiogroup', { name: 'Filter certifications' })).getAllByRole('radio')
-    expect(radios.map((r) => r.textContent)).toEqual(['All3', 'Programming1', 'Security1', 'Software Engineering1'])
+    const aside = screen.getByRole('complementary', { name: 'Filter certifications' })
+    const groups = within(aside).getAllByRole('group')
+    expect(groups.map((g) => g.querySelector('legend')?.textContent)).toEqual(['Topic', 'Type'])
+    expect(within(groups[1]).getAllByRole('checkbox').map((c) => c.closest('label')!.textContent)).toEqual([
+      'Certification2',
+      'Course10',
+      'Event2',
+    ])
   })
 
-  test('filter shows only that category and updates the URL', async () => {
+  test('topic and type filters combine and update the URL', async () => {
     page()
-    await userEvent.click(screen.getByRole('radio', { name: /Security/ }))
+    await userEvent.click(box(/^Cloud/))
+    await userEvent.click(box(/^Data/))
+    expect(screen.getAllByRole('article')).toHaveLength(5)
+    await userEvent.click(box(/^Certification/))
+    expect(screen.getAllByRole('article')).toHaveLength(1)
+    expect(cardFor('AZ-900')).toBeInTheDocument()
+    expect(screen.getByTestId('where')).toHaveTextContent('/certificates?topic=cloud,data&type=certification')
+    await userEvent.click(screen.getByRole('button', { name: 'Clear all' }))
+    expect(screen.getAllByRole('article')).toHaveLength(certificates.length)
+  })
+
+  test('search matches the name, short name and issuer', async () => {
+    page()
+    const search = screen.getByRole('searchbox', { name: 'Search certifications' })
+    await userEvent.type(search, 'certiport')
     expect(screen.getAllByRole('article')).toHaveLength(1)
     expect(cardFor('CCST Cybersecurity')).toBeInTheDocument()
-    expect(screen.getByTestId('where')).toHaveTextContent('/certificates?category=Security')
-    await userEvent.click(screen.getByRole('radio', { name: /All/ }))
-    expect(screen.getAllByRole('article')).toHaveLength(3)
+    await userEvent.clear(search)
+    await userEvent.type(search, 'az-900')
+    expect(cardFor('AZ-900')).toBeInTheDocument()
+    expect(screen.getByTestId('where')).toHaveTextContent('/certificates?q=az-900')
   })
 
-  test('an unknown or empty category in the URL shows all certifications', () => {
-    page('/certificates?category=Cloud')
-    expect(screen.getAllByRole('article')).toHaveLength(3)
+  test('filters in the URL apply on load; unknown ones are ignored', () => {
+    page('/certificates?type=event')
+    expect(screen.getAllByRole('article')).toHaveLength(2)
+    cleanup()
+    page('/certificates?topic=nope&category=Nope')
+    expect(screen.getAllByRole('article')).toHaveLength(certificates.length)
   })
 
   test('CCST card shows short name, full name, issuer via, date and verify button', () => {
