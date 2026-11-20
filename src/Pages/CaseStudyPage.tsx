@@ -66,7 +66,7 @@ export function CaseStudyView({ project }: { project: Project }) {
                 <StorySection title="Approach" html={cs.approach}>
                   {project.approachDiagram && (
                     <div className="overflow-hidden rounded-md">
-                      <SmartImage src={project.approachDiagram} alt={`${name} approach diagram`} aspect="16/9" />
+                      <SmartImage src={project.approachDiagram} alt={`${name} approach diagram`} aspect="16/9" crop="top" />
                     </div>
                   )}
                 </StorySection>

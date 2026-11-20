@@ -32,11 +32,11 @@ export function PreviewStage({ project, selectedName }: { project: Project; sele
             autoPlay={!reduced}
             controls={reduced}
             aria-label={`${name} screen recording`}
-            className="block w-full object-cover"
+            className="block w-full object-cover object-top"
             style={{ aspectRatio: '16/8' }}
           />
         ) : (
-          <SmartImage key={project.slug} src={cover?.image} alt={`${name} screenshot`} initial={name.charAt(0)} aspect="16/8" />
+          <SmartImage key={project.slug} src={cover?.image} alt={`${name} screenshot`} initial={name.charAt(0)} aspect="16/8" crop="top" />
         )}
       </div>
       <div className="flex flex-col gap-2 px-1 pt-3 pb-1 min-[760px]:px-2">

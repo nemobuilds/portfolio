@@ -6,11 +6,17 @@ export function SmartImage({
   alt,
   initial,
   aspect,
+  crop = 'center',
 }: {
   src?: string
   alt: string
   initial?: string
   aspect: string
+  /**
+   * Which part survives when the frame crops the image. Project screenshots use
+   * "top" so the app's own navbar stays visible. The file itself is never cut.
+   */
+  crop?: 'top' | 'center'
 }) {
   const [state, setState] = useState<'loading' | 'loaded' | 'error'>('loading')
   const showFallback = !src || state === 'error'
@@ -27,7 +33,8 @@ export function SmartImage({
             loading="lazy"
             onLoad={() => setState('loaded')}
             onError={() => setState('error')}
-            className="absolute inset-0 w-full h-full object-cover"
+            data-crop={crop}
+            className={`absolute inset-0 w-full h-full object-cover ${crop === 'top' ? 'object-top' : 'object-center'}`}
           />
         </>
       )}
