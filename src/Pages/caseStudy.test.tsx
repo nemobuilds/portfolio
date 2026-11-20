@@ -96,6 +96,18 @@ describe('FactsRail', () => {
     expect(names('Domain')).toEqual([['Developer Tools', '/projects?domain=developer-tools']])
   })
 
+  test('Stack and Links come first, then Focus, Origin and Domain', () => {
+    rail({
+      ...full,
+      repoUrl: 'https://github.com/x/y',
+      categories: ['Backend & APIs', 'Open Source', 'Developer Tools'],
+    })
+    const labels = Array.from(screen.getByRole('complementary', { name: 'Project facts' }).children).map(
+      (fact) => fact.firstElementChild?.textContent,
+    )
+    expect(labels).toEqual(['Stack', 'Links', 'Focus', 'Origin', 'Domain', 'Role', 'Timeline'])
+  })
+
   test('a group with no categories is left out', () => {
     rail({ ...base, categories: ['Backend & APIs'] })
     expect(screen.queryByRole('list', { name: 'Origin' })).toBeNull()
@@ -126,7 +138,7 @@ describe('Gallery', () => {
     expect(container.querySelector('[data-columns]')).toBeNull()
   })
 
-  test('columns for 1, 2 and 3 items', () => {
+  test('one item fills the row; two or more go two to a row', () => {
     const cols = (n: number) => {
       const { container, unmount } = at(<Gallery items={Array.from({ length: n }, (_, i) => item(i))} />)
       const v = container.querySelector('[data-columns]')!.getAttribute('data-columns')
@@ -135,8 +147,31 @@ describe('Gallery', () => {
     }
     expect(cols(1)).toBe('1')
     expect(cols(2)).toBe('2')
-    expect(cols(3)).toBe('3')
-    expect(cols(5)).toBe('3')
+    expect(cols(3)).toBe('2')
+    expect(cols(5)).toBe('2')
+  })
+
+  test('each shot is a top-cropped 16:9 frame that opens the full original in a new tab', () => {
+    at(<Gallery items={[item(1), item(2)]} />)
+    const link = screen.getByRole('link', { name: 'Open full image: Shot 1' })
+    expect(link).toHaveAttribute('href', '/g1.png')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noreferrer')
+    const img = within(link).getByRole('img', { name: 'Shot 1' })
+    expect(img).toHaveAttribute('src', '/g1.png')
+    expect(img).toHaveAttribute('data-crop', 'top')
+    expect(img.className).toContain('object-top')
+    expect(img.parentElement).toHaveStyle({ aspectRatio: '16/9' })
+    expect(screen.getByText('Shot 2').tagName).toBe('FIGCAPTION')
+  })
+})
+
+describe('top crop for project images', () => {
+  test('the cover keeps the top of the screenshot', () => {
+    at(<CaseStudyView project={{ ...base, cover: { image: '/images/projects/zealia/thumb.webp' } }} />)
+    const img = screen.getByRole('img', { name: `${base.name} screenshot` })
+    expect(img).toHaveAttribute('data-crop', 'top')
+    expect(img.className).toContain('object-top')
   })
 })
 

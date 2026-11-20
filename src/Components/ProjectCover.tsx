@@ -24,11 +24,11 @@ export function ProjectCover({ project }: { project: Project }) {
                 autoPlay={!reduced}
                 controls={reduced}
                 aria-label={`${name} screen recording`}
-                className="block w-full object-cover"
+                className="block w-full object-cover object-top"
                 style={{ aspectRatio: '16/8' }}
               />
             ) : (
-              <SmartImage src={cover.image} alt={`${name} screenshot`} initial={name.charAt(0)} aspect="16/8" />
+              <SmartImage src={cover.image} alt={`${name} screenshot`} initial={name.charAt(0)} aspect="16/8" crop="top" />
             )}
           </div>
         </div>

@@ -22,7 +22,7 @@ export function ProjectRow({ project, selected, onSelect, onPreview }: Props) {
       }`}
     >
       <span className="block h-9 w-14 overflow-hidden rounded-[4px] shadow-[inset_0_0_0_1px_rgba(23,22,28,0.12)]">
-        <SmartImage src={project.thumbnail} alt="" initial={project.name.charAt(0)} aspect="56/36" />
+        <SmartImage src={project.thumbnail} alt="" initial={project.name.charAt(0)} aspect="56/36" crop="top" />
       </span>
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="text-[15px] font-bold">{project.name}</span>

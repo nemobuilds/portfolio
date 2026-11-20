@@ -27,37 +27,7 @@ export function FactsRail({ project }: { project: Project }) {
       aria-label="Project facts"
       className="surface-slate flex flex-col rounded-[10px] p-[26px] shadow-[0_26px_36px_-18px_rgba(8,14,50,0.45)] min-[900px]:sticky min-[900px]:top-6"
     >
-      {PROJECT_FACETS.map((facet) => {
-        const names = categoriesIn(facet.key, categories)
-        if (names.length === 0) return null
-        return (
-          <Fact key={facet.key} label={facet.label}>
-            <div className="pt-0.5">
-              <CategoryPills label={facet.label}>
-                {names.map((name) => (
-                  <li key={name}>
-                    <CategoryPill
-                      label={name}
-                      variant={facet.key === 'focus' ? 'filled' : 'outline'}
-                      to={filterHref('/projects', PROJECT_FACETS, name)}
-                    />
-                  </li>
-                ))}
-              </CategoryPills>
-            </div>
-          </Fact>
-        )
-      })}
-      {role && (
-        <Fact label="Role">
-          <span className="text-[15px]">{role}</span>
-        </Fact>
-      )}
-      {period && (
-        <Fact label="Timeline">
-          <span className="text-[15px]">{period}</span>
-        </Fact>
-      )}
+      {/* Order: Stack and Links first (what it is built with, where to see it), then the category groups. */}
       {stack.length > 0 && (
         <Fact label="Stack">
           <StackList items={stack} />
@@ -91,6 +61,37 @@ export function FactsRail({ project }: { project: Project }) {
               </a>
             )}
           </div>
+        </Fact>
+      )}
+      {PROJECT_FACETS.map((facet) => {
+        const names = categoriesIn(facet.key, categories)
+        if (names.length === 0) return null
+        return (
+          <Fact key={facet.key} label={facet.label}>
+            <div className="pt-0.5">
+              <CategoryPills label={facet.label}>
+                {names.map((name) => (
+                  <li key={name}>
+                    <CategoryPill
+                      label={name}
+                      variant={facet.key === 'focus' ? 'filled' : 'outline'}
+                      to={filterHref('/projects', PROJECT_FACETS, name)}
+                    />
+                  </li>
+                ))}
+              </CategoryPills>
+            </div>
+          </Fact>
+        )
+      })}
+      {role && (
+        <Fact label="Role">
+          <span className="text-[15px]">{role}</span>
+        </Fact>
+      )}
+      {period && (
+        <Fact label="Timeline">
+          <span className="text-[15px]">{period}</span>
         </Fact>
       )}
     </aside>

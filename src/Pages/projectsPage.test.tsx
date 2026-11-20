@@ -218,6 +218,13 @@ describe('ProjectCard', () => {
       </MemoryRouter>,
     )
 
+  test('the thumbnail is cropped from the top', () => {
+    const { container } = show({ ...base, thumbnail: '/images/projects/x/thumb.webp' })
+    const img = container.querySelector('img[data-crop]')!
+    expect(img).toHaveAttribute('data-crop', 'top')
+    expect(img.className).toContain('object-top')
+  })
+
   test('whole card opens the project through a stretched title link', () => {
     show(base)
     const link = screen.getByRole('link', { name: base.name })

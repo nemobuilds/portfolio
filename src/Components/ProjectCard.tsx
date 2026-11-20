@@ -17,7 +17,7 @@ export default function ProjectCard({ project }: { project: Project }) {
   const focus = categoriesIn('focus', project.categories)
   return (
     <article className="surface-slate relative flex flex-col overflow-hidden rounded-[10px] shadow-[0_26px_36px_-18px_rgba(8,14,50,0.45)]">
-      <SmartImage src={project.thumbnail} alt="" initial={project.name.charAt(0)} aspect="16/10" />
+      <SmartImage src={project.thumbnail} alt="" initial={project.name.charAt(0)} aspect="16/10" crop="top" />
       <div className="flex flex-1 flex-col gap-2.5 px-[22px] pt-5 pb-[22px]">
         <h3 className="m-0 text-[22px] font-bold tracking-[-0.02em] line-clamp-2">
           <Link to={to} className="text-[var(--text)] no-underline after:absolute after:inset-0 after:content-['']">
