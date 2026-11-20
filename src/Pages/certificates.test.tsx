@@ -219,6 +219,29 @@ describe('CertificatesPage', () => {
     )
   })
 
+  test('sort: newest by default, then oldest, A to Z by card title, and issuer', async () => {
+    page()
+    const select = screen.getByRole('combobox', { name: 'Sort' })
+    const titles = () => screen.getAllByRole('article').map((c) => within(c).getByRole('heading').textContent)
+    expect(select).toHaveValue('newest')
+    expect(titles()[0]).toBe('AZ-900')
+    await userEvent.selectOptions(select, 'oldest')
+    expect(titles()[0]).toBe('PCAP: Programming Essentials in Python')
+    expect(screen.getByTestId('where')).toHaveTextContent('/certificates?sort=oldest')
+    await userEvent.selectOptions(select, 'az')
+    expect(titles()[0]).toBe('AI Skills Fest 2026')
+    expect(titles()[1]).toBe('AZ-900')
+    await userEvent.selectOptions(select, 'issuer')
+    expect(titles()[0]).toBe('CCST Cybersecurity')
+  })
+
+  test('sort and filters share the URL', async () => {
+    page('/certificates?type=course&sort=za')
+    const titles = screen.getAllByRole('article').map((c) => within(c).getByRole('heading').textContent)
+    expect(titles).toHaveLength(10)
+    expect(titles[0]).toBe('Understanding Data Engineering')
+  })
+
   test('card shows the type as a badge and the topics as plain pills', () => {
     page()
     const card = cardFor('Intermediate Python')

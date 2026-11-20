@@ -38,7 +38,8 @@ Frontmatter is the block between the two `---` lines at the top of the file.
 | `summary` | yes | One line on cards | `summary: A performance testing intelligence platform.` |
 | `description` | no | Longer subtitle on the project page | `description: Performance Testing Intelligence Platform` |
 | `categories` | yes | List of one or more filter categories. Pick from the three groups in [Project categories](#project-categories). No name twice | `categories: [Backend & APIs, Open Source, Developer Tools]` |
-| `order` | yes | Whole number. Sorts `/projects`. Must be unique | `order: 1` |
+| `date` | no | Month you started the project, as `YYYY-MM`. Used by the "Newest first" and "Oldest first" sorts. Projects without a date sort last | `date: 2026-09` |
+| `order` | yes | Whole number. The "Featured" sort on `/projects` (the default). Must be unique | `order: 1` |
 | `home` | no | `true` shows it on the home page. Default `false` | `home: true` |
 | `homeOrder` | if `home: true` | Whole number. Sorts the home list. Must be unique | `homeOrder: 1` |
 | `stack` | yes | At least one tool name | `stack: [.NET, React, PostgreSQL, Docker]` |
@@ -165,6 +166,20 @@ The search and the picked categories live in the page URL. Copy the URL to share
 - `/certificates?topic=cloud,data&type=course`
 
 Each category becomes lowercase words joined by hyphens: `Frontend & UI/UX` becomes `frontend-ui-ux`. Picks in one group show items with any of them. Picks in different groups show only items that match each group. Old links with `?category=<name>` still work.
+
+## Sorting
+
+A "Sort" select sits at the right of the result line. The sort is in the URL as `?sort=`, next to search and filters. The default sort is left out of the URL. "Clear all" clears search and filters, but keeps the sort.
+
+| Page | Options (URL value) | Default |
+| --- | --- | --- |
+| /projects | Featured (`featured`, uses `order`), Newest first (`newest`), Oldest first (`oldest`), A to Z (`az`), Z to A (`za`) | Featured |
+| /certificates | Newest first (`newest`), Oldest first (`oldest`), A to Z (`az`), Z to A (`za`), Issuer A to Z (`issuer`) | Newest first |
+
+- Newest and Oldest use the project `date` or the certification `issued` month. Items without one go last.
+- Certifications sort A to Z by the card title: `shortName` if set, else `name`.
+- Items that tie keep the default order.
+- Example: `/certificates?topic=cloud&sort=oldest`.
 
 ## What fails the build
 

@@ -16,6 +16,15 @@ test('nextProject wraps to the first', () => {
   expect(nextProject('ambition').slug).toBe('endpoint')
   expect(nextProject('endpoint').slug).toBe('aws-s3-clone')
 })
+test('project dates', () => {
+  expect(Object.fromEntries(projects.map(p => [p.slug, p.date]))).toEqual({
+    endpoint: '2026-09',
+    'aws-s3-clone': '2026-05',
+    'lore-of-legends': '2026-05',
+    zealia: '2024-07',
+    ambition: '2026-04',
+  })
+})
 test('project categories', () => {
   expect(Object.fromEntries(projects.map(p => [p.slug, p.categories]))).toEqual({
     endpoint: ['Full-Stack Applications', 'Backend & APIs', 'Personal Projects', 'Open Source', 'Developer Tools', 'Cloud & Infrastructure'],

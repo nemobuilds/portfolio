@@ -94,6 +94,45 @@ describe('ProjectsPage', () => {
     expect(names()).toEqual(['Lore of Legends'])
   })
 
+  test('the sort select orders the cards and keeps the choice in the URL', async () => {
+    page()
+    const select = screen.getByRole('combobox', { name: 'Sort' })
+    expect(select).toHaveValue('featured')
+    expect(within(select).getAllByRole('option').map((o) => o.textContent)).toEqual([
+      'Featured',
+      'Newest first',
+      'Oldest first',
+      'A to Z',
+      'Z to A',
+    ])
+    await userEvent.selectOptions(select, 'az')
+    expect(names()).toEqual(['AMBITION', 'AWS S3 Clone', 'Endpoint', 'Lore of Legends', 'Zealia'])
+    expect(screen.getByTestId('where')).toHaveTextContent('/projects?sort=az')
+    await userEvent.selectOptions(select, 'featured')
+    expect(screen.getByTestId('where')).toHaveTextContent(/^\/projects$/)
+  })
+
+  test('sort works with filters, and Clear all keeps the sort', async () => {
+    page('/projects?sort=za')
+    await userEvent.click(sidebarBox(/^Backend & APIs/))
+    expect(names()).toEqual(['Endpoint', 'AWS S3 Clone'])
+    expect(screen.getByTestId('where')).toHaveTextContent('/projects?focus=backend-apis&sort=za')
+    await userEvent.click(screen.getByRole('button', { name: 'Clear all' }))
+    expect(screen.getByTestId('where')).toHaveTextContent(/^\/projects\?sort=za$/)
+    expect(names()[0]).toBe('Zealia')
+  })
+
+  test('newest and oldest use the project date, and an unknown sort falls back to Featured', () => {
+    page('/projects?sort=oldest')
+    expect(names()[0]).toBe('Zealia')
+    cleanup()
+    page('/projects?sort=newest')
+    expect(names()[0]).toBe('Endpoint')
+    cleanup()
+    page('/projects?sort=nope')
+    expect(screen.getByRole('combobox', { name: 'Sort' })).toHaveValue('featured')
+  })
+
   test('an unknown category in the URL shows all projects', () => {
     page('/projects?focus=nope&category=Nope')
     expect(cards()).toHaveLength(5)
