@@ -41,12 +41,12 @@ export default function Experience() {
             <section
               key={c.craft}
               aria-label={c.craft}
-              className="grid gap-2.5 border-t border-[rgba(200,210,245,0.16)] py-4 first:border-t-0 min-[900px]:grid-cols-[132px_minmax(0,1fr)] min-[900px]:gap-5"
+              className="grid gap-2 border-t border-[rgba(200,210,245,0.16)] py-3 first:border-t-0 min-[900px]:grid-cols-[132px_minmax(0,1fr)] min-[900px]:gap-5"
             >
-              <h3 className="m-0 text-base font-bold text-[var(--cream)] min-[900px]:pt-[22px]" style={{ letterSpacing: '-0.015em' }}>
+              <h3 className="m-0 text-[15px] font-bold text-[var(--cream)] min-[900px]:pt-[10px]" style={{ letterSpacing: '-0.015em' }}>
                 {c.craft}
               </h3>
-              <ul className="m-0 flex list-none flex-wrap gap-x-[22px] gap-y-[18px] p-0">
+              <ul className="m-0 flex list-none flex-wrap gap-x-3 gap-y-3 p-0">
                 {c.items.map((n) => (
                   <ToolTile key={n} name={n} />
                 ))}
