@@ -12,9 +12,24 @@ beforeEach(() => {
 })
 afterEach(() => vi.useRealTimers())
 
+// The API Engineer entry is hidden on the site; these lead-card tests show it again by dropping the flag.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const unhidden = experience.map(({ hidden, ...e }) => e)
+
 describe('Experience', () => {
-  test('lead card reads "Next, API Engineer" with focus, org and period, description', () => {
+  test('a hidden entry stays in the data but is not shown: no lead card, no future role or date', () => {
+    expect(experience[0]).toMatchObject({ role: 'API Engineer', hidden: true })
     render(<Experience />)
+    expect(screen.queryByRole('article')).toBeNull()
+    expect(screen.queryByText(/API Engineer/)).toBeNull()
+    expect(screen.queryByText(/December 2026/)).toBeNull()
+    const rows = within(screen.getByRole('list', { name: 'Earlier roles' })).getAllByRole('listitem')
+    expect(rows).toHaveLength(4)
+    expect(within(rows[0]).getByText('Software Test Engineer')).toBeInTheDocument()
+  })
+
+  test('lead card reads "Next, API Engineer" with focus, org and period, description', () => {
+    render(<Experience entries={unhidden} />)
     expect(screen.getByRole('heading', { level: 3, name: 'Next, API Engineer' })).toBeInTheDocument()
     expect(screen.getByText('Backend & site reliability · Azure')).toBeInTheDocument()
     expect(screen.getByText('East West Banking Corporation · from December 2026')).toBeInTheDocument()
@@ -22,7 +37,7 @@ describe('Experience', () => {
   })
 
   test('"Next," is the accent orange (large text) and the focus line is bold ember (AA on dark glass)', () => {
-    render(<Experience />)
+    render(<Experience entries={unhidden} />)
     expect(screen.getByText('Next,').className).toContain('text-[var(--accent)]')
     const focus = screen.getByText('Backend & site reliability · Azure')
     expect(focus.className).toContain('text-[var(--ember)]')
@@ -33,12 +48,12 @@ describe('Experience', () => {
 
   test('says "Now," once the start month has passed', () => {
     vi.setSystemTime(new Date('2027-01-05'))
-    render(<Experience />)
+    render(<Experience entries={unhidden} />)
     expect(screen.getByRole('heading', { level: 3, name: 'Now, API Engineer' })).toBeInTheDocument()
   })
 
   test('four compact rows follow, in data order, with no descriptions', () => {
-    render(<Experience />)
+    render(<Experience entries={unhidden} />)
     const rows = within(screen.getByRole('list', { name: 'Earlier roles' })).getAllByRole('listitem')
     expect(rows).toHaveLength(4)
     experience.slice(1).forEach((e, i) => {
