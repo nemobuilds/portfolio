@@ -4,6 +4,7 @@ import { render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import Experience from './Experience'
 import { experience } from '../content/experience'
+import { tools } from '../content/tools'
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -84,7 +85,8 @@ describe('Experience', () => {
   test('every tile shows a logo with its name', () => {
     render(<Experience />)
     const tiles = document.querySelectorAll('.app-cell')
-    expect(tiles.length).toBe(14)
+    // Every tool in tools.ts shows: the content check requires a logo for each one.
+    expect(tiles.length).toBe(tools.reduce((n, g) => n + g.items.length, 0))
     tiles.forEach((t) => expect(t.querySelector('img')).not.toBeNull())
   })
 })

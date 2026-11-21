@@ -1,4 +1,5 @@
 import angularSvg from '../assets/logos/angular-original.svg'
+import azureSvg from '../assets/logos/azure-original.svg'
 import csharpSvg from '../assets/logos/csharp-original.svg'
 import css3Svg from '../assets/logos/css3-original.svg'
 import dockerSvg from '../assets/logos/docker-original.svg'
@@ -8,6 +9,9 @@ import gitSvg from '../assets/logos/git-original.svg'
 import html5Svg from '../assets/logos/html5-original.svg'
 import javaSvg from '../assets/logos/java-original.svg'
 import javascriptSvg from '../assets/logos/javascript-original.svg'
+// JMeter: Simple Icons (CC0), filled with the Apache JMeter red. The others are Devicon (MIT).
+import jmeterSvg from '../assets/logos/jmeter-original.svg'
+import mysqlSvg from '../assets/logos/mysql-original.svg'
 import phpSvg from '../assets/logos/php-original.svg'
 import postgresqlSvg from '../assets/logos/postgresql-original.svg'
 import postmanSvg from '../assets/logos/postman-original.svg'
@@ -22,6 +26,7 @@ export type TechLogo = { kind: 'logo'; src: string } | { kind: 'chain' } | { kin
 
 const logos: Record<string, string> = {
   'Angular': angularSvg,
+  'Azure': azureSvg,
   'C#': csharpSvg,
   'CSS': css3Svg,
   'Docker': dockerSvg,
@@ -31,6 +36,8 @@ const logos: Record<string, string> = {
   'HTML': html5Svg,
   'Java': javaSvg,
   'JavaScript': javascriptSvg,
+  'JMeter': jmeterSvg,
+  'MySQL': mysqlSvg,
   'PHP': phpSvg,
   'PostgreSQL': postgresqlSvg,
   'Postman': postmanSvg,
