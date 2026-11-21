@@ -1,6 +1,7 @@
-import { experience, leadLabel, visibleEntries, type LogEntry } from '../content/experience'
+import { experience, groupEntries, leadLabel, type LogEntry } from '../content/experience'
 import { tools } from '../content/tools'
 import { techLogo } from '../content/techLogos'
+import { CurrentRoleCard } from '../Components/CurrentRoleCard'
 import { LeadEntryCard } from '../Components/LeadEntryCard'
 import { LogRow } from '../Components/LogRow'
 import { ToolTile } from '../Components/ToolTile'
@@ -9,10 +10,8 @@ const headingClass = 'm-0 text-[32px] font-bold text-[var(--cream)] min-[760px]:
 const headingStyle = { letterSpacing: '-0.035em' }
 
 export default function Experience({ entries = experience }: { entries?: readonly LogEntry[] }) {
-  // Entries with `hidden: true` stay in the data but are not shown.
-  const shown = visibleEntries(entries)
-  const lead = shown.find((e) => e.start)
-  const rows = shown.filter((e) => e !== lead)
+  // Entries with `hidden: true` stay in the data but are not shown; `current: true` ones get a slate card.
+  const { lead, current, rows } = groupEntries(entries)
   const label = lead ? leadLabel(lead, new Date()) : 'Now,'
   const crafts = tools
     .map((t) => ({ ...t, items: t.items.filter((n) => techLogo(n).kind === 'logo') }))
@@ -25,6 +24,9 @@ export default function Experience({ entries = experience }: { entries?: readonl
           Experience
         </h2>
         {lead && <LeadEntryCard entry={lead} label={label} />}
+        {current.map((e) => (
+          <CurrentRoleCard key={`${e.period}-${e.role}`} entry={e} />
+        ))}
         <ul
           aria-label="Earlier roles"
           className="m-0 list-none rounded-[10px] px-5 py-1 bg-[var(--glass-dark)] shadow-[inset_0_0_0_1px_rgba(200,212,250,0.36)]"
