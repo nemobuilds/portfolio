@@ -1,6 +1,9 @@
+import { Link } from 'react-router-dom'
 import { Avatar } from '../Components/Avatar'
 import { Button } from '../Components/Button'
 
+// Hero B: the greeting is the title and the paragraph is the main text. The title
+// stays modest (28px on phones, up to 40px) so it never outweighs the paragraph.
 export default function Hero() {
   return (
     <section
@@ -8,27 +11,35 @@ export default function Hero() {
       aria-labelledby="hero-heading"
       className="flex justify-center px-4 pt-[112px] pb-[48px] text-center min-[760px]:px-8 min-[760px]:pt-[128px] min-[760px]:pb-[56px]"
     >
-      <div className="flex min-w-0 flex-col items-center gap-7">
-        <p className="m-0 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[18px] text-[var(--text-secondary)]">
-          <span>Hi, I’m John Rogee</span>
-          <Avatar size={36} />
-          <span className="-ml-1.5">,</span>
-          <em className="font-serif text-[18px] text-[var(--serif-accent)]">aka Nemo</em>
-        </p>
+      <div className="flex min-w-0 flex-col items-center gap-6">
         <h1
           id="hero-heading"
-          className="m-0 font-bold"
-          style={{ fontSize: 'clamp(26px, min(7vw, max(4.4vw, 40px)), 64px)', lineHeight: 1.04, letterSpacing: '-0.04em' }}
+          className="m-0 inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[clamp(28px,3.2vw,40px)] font-bold text-[var(--text)]"
+          style={{ lineHeight: 1.1, letterSpacing: '-0.035em' }}
         >
-          <span className="block">I build software with care,{' '}</span>
-          <span className="block">push it until it bends,{' '}</span>
-          <span className="block">
-            and make it <span className="accent-word">stronger</span>.
-          </span>
+          <span>Hi, I’m John Rogee</span>
+          <span className="min-[760px]:hidden"><Avatar size={36} /></span>
+          <span className="hidden min-[760px]:inline-flex"><Avatar size={44} /></span>
+          <em className="font-serif font-normal text-[1em] text-[var(--serif-accent)]" style={{ letterSpacing: '-0.01em' }}>
+            aka Nemo
+          </em>
         </h1>
-        <p className="m-0 max-w-[48ch] text-[18px] text-[var(--text-secondary)]">
-          Building software, and learning how to keep it fast and up.
-        </p>
+        <div className="flex max-w-[60ch] flex-col gap-3">
+          <p className="m-0 text-[18px] leading-normal text-[var(--text)] min-[760px]:text-[21px]">
+            Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the
+            next version doesn’t.
+          </p>
+          <p className="m-0 text-[16px] leading-normal text-[var(--text-secondary)] min-[760px]:text-[18px]">
+            Lately I’ve been building{' '}
+            <Link
+              to="/projects/endpoint"
+              className="font-semibold text-[var(--text)] underline decoration-[var(--accent)] decoration-2 underline-offset-[3px]"
+            >
+              Endpoint
+            </Link>
+            , an API health monitor that runs scheduled uptime and response-time checks.
+          </p>
+        </div>
         <div className="flex flex-nowrap items-center justify-center gap-3">
           <Button variant="primary" surface="ink" href="#projects" trailingIcon="arrow" label="See the work" />
           <Button variant="secondary" href="#contact" label="Get in touch" />
