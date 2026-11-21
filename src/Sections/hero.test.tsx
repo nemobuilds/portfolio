@@ -41,15 +41,27 @@ describe('waterGradient', () => {
 })
 
 describe('Hero', () => {
-  test('h1 text and single accent word', () => {
+  test('the greeting is the title, kept modest so the paragraph leads', () => {
     render(<MemoryRouter><Hero /></MemoryRouter>)
     const h1 = screen.getByRole('heading', { level: 1 })
-    expect(h1).toHaveTextContent('I build software with care, push it until it bends, and make it stronger.')
-    const accents = h1.querySelectorAll('.accent-word')
-    expect(accents).toHaveLength(1)
-    expect(accents[0]).toHaveTextContent('stronger')
-    expect(screen.getByText('aka Nemo')).toBeInTheDocument()
-    expect(screen.getByText('Building software, and learning how to keep it fast and up.')).toBeInTheDocument()
+    expect(h1).toHaveTextContent('Hi, I’m John Rogee')
+    expect(h1).toHaveTextContent('aka Nemo')
+    expect(h1.className).toContain('text-[clamp(28px,3.2vw,40px)]')
+    expect(screen.queryByText(/push it until it bends/)).toBeNull()
+  })
+
+  test('the paragraph uses the chosen copy and links Endpoint to its project page', () => {
+    render(<MemoryRouter><Hero /></MemoryRouter>)
+    expect(
+      screen.getByText(
+        'Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the next version doesn’t.',
+      ),
+    ).toBeInTheDocument()
+    const link = screen.getByRole('link', { name: 'Endpoint' })
+    expect(link).toHaveAttribute('href', '/projects/endpoint')
+    expect(link.closest('p')).toHaveTextContent(
+      'Lately I’ve been building Endpoint, an API health monitor that runs scheduled uptime and response-time checks.',
+    )
   })
 
   test('top padding clears the floating pill (16px offset + ~54px tall)', () => {

@@ -158,6 +158,36 @@ The `/certificates` page has a search box and a filter sidebar with two groups. 
 - The certification modal has a Topic row and a Type row. Each pill links to `/certificates` filtered by that category and closes the modal.
 - To add or rename a category, edit `CERT_FACETS` in `src/content/certifications.ts`.
 
+## Experience
+
+Open `src/content/experience.ts`. Each role is one object in the `experience` list, shown on the home page in list order.
+
+- The first entry with a `start` month (`YYYY-MM`) becomes the big lead card. Before that month it reads "Next,"; from that month on it reads "Now,". `focus` and `description` show only on the lead card.
+- An entry with `current: true` shows in its own light slate card, reading "Now, <role>", above the earlier roles. Use it for every job you hold today. The word "now" in `period` does not do this; only the flag does.
+- All other entries show as compact rows: `period`, `role` and `org`.
+
+```ts
+{ current: true, period: '2025 – now', role: 'Software Test Engineer', org: 'East West Banking Corporation' }
+```
+
+When a role ends, remove `current: true` and change `period` (for example `2025 – 2026`). It moves back into the rows.
+
+### Hide an entry without deleting it
+
+Add `hidden: true` to the object. The entry stays in the file but does not show anywhere on the site. Remove the line, or set `hidden: false`, to show it again.
+
+```ts
+{
+  hidden: true,
+  period: 'from December 2026',
+  role: 'API Engineer',
+  org: 'East West Banking Corporation',
+  start: '2026-12',
+}
+```
+
+When the hidden entry is the one with a `start` month, the lead card disappears and only the rows show.
+
 ## Shareable filter links
 
 The search and the picked categories live in the page URL. Copy the URL to share a filtered view. Examples:

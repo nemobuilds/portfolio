@@ -12,9 +12,50 @@ beforeEach(() => {
 })
 afterEach(() => vi.useRealTimers())
 
+// The API Engineer entry is hidden on the site; these lead-card tests show it again by dropping the flag.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const unhidden = experience.map(({ hidden, ...e }) => e)
+
 describe('Experience', () => {
-  test('lead card reads "Next, API Engineer" with focus, org and period, description', () => {
+  test('a hidden entry stays in the data but is not shown: no future role or date', () => {
+    expect(experience[0]).toMatchObject({ role: 'API Engineer', hidden: true })
     render(<Experience />)
+    expect(screen.queryByText(/API Engineer/)).toBeNull()
+    expect(screen.queryByText(/December 2026/)).toBeNull()
+    expect(screen.queryByText('Next,')).toBeNull()
+  })
+
+  test('the current role (current: true) gets a light slate "Now," card with the decorative ring', () => {
+    expect(experience.find((e) => e.current)).toMatchObject({ role: 'Software Test Engineer' })
+    render(<Experience />)
+    const cards = screen.getAllByRole('article')
+    expect(cards).toHaveLength(1)
+    const card = cards[0]
+    expect(card.className).toContain('surface-slate')
+    expect(within(card).getByRole('heading', { level: 3, name: 'Now, Software Test Engineer' })).toBeInTheDocument()
+    expect(within(card).getByText('East West Banking Corporation · 2025 – now')).toBeInTheDocument()
+    expect(within(card).getByText('Now,').className).toContain('text-[var(--date)]')
+    expect(card.querySelector('span[aria-hidden="true"].rounded-full')).not.toBeNull()
+  })
+
+  test('only past roles stay in the dark list', () => {
+    render(<Experience />)
+    const rows = within(screen.getByRole('list', { name: 'Earlier roles' })).getAllByRole('listitem')
+    expect(rows.map((r) => r.querySelector('b')?.textContent)).toEqual([
+      'Software QA Tester',
+      '4th-Year Representative',
+      'BS Computer Science',
+    ])
+  })
+
+  test('the current flag is data, not the word "now" in the period', () => {
+    render(<Experience entries={[{ period: '2024 – now', role: 'Volunteer', org: 'Org' }]} />)
+    expect(screen.queryByRole('article')).toBeNull()
+    expect(within(screen.getByRole('list', { name: 'Earlier roles' })).getByText('Volunteer')).toBeInTheDocument()
+  })
+
+  test('lead card reads "Next, API Engineer" with focus, org and period, description', () => {
+    render(<Experience entries={unhidden} />)
     expect(screen.getByRole('heading', { level: 3, name: 'Next, API Engineer' })).toBeInTheDocument()
     expect(screen.getByText('Backend & site reliability · Azure')).toBeInTheDocument()
     expect(screen.getByText('East West Banking Corporation · from December 2026')).toBeInTheDocument()
@@ -22,7 +63,7 @@ describe('Experience', () => {
   })
 
   test('"Next," is the accent orange (large text) and the focus line is bold ember (AA on dark glass)', () => {
-    render(<Experience />)
+    render(<Experience entries={unhidden} />)
     expect(screen.getByText('Next,').className).toContain('text-[var(--accent)]')
     const focus = screen.getByText('Backend & site reliability · Azure')
     expect(focus.className).toContain('text-[var(--ember)]')
@@ -33,15 +74,15 @@ describe('Experience', () => {
 
   test('says "Now," once the start month has passed', () => {
     vi.setSystemTime(new Date('2027-01-05'))
-    render(<Experience />)
+    render(<Experience entries={unhidden} />)
     expect(screen.getByRole('heading', { level: 3, name: 'Now, API Engineer' })).toBeInTheDocument()
   })
 
-  test('four compact rows follow, in data order, with no descriptions', () => {
-    render(<Experience />)
+  test('past roles follow as compact rows, in data order, with no descriptions', () => {
+    render(<Experience entries={unhidden} />)
     const rows = within(screen.getByRole('list', { name: 'Earlier roles' })).getAllByRole('listitem')
-    expect(rows).toHaveLength(4)
-    experience.slice(1).forEach((e, i) => {
+    expect(rows).toHaveLength(3)
+    experience.filter((e) => !e.start && !e.current).forEach((e, i) => {
       expect(within(rows[i]).getByText(e.period)).toBeInTheDocument()
       expect(within(rows[i]).getByText(e.role)).toBeInTheDocument()
       expect(within(rows[i]).getByText(e.org)).toBeInTheDocument()
@@ -64,7 +105,7 @@ describe('Experience', () => {
     const list = screen.getByRole('list', { name: 'Earlier roles' })
     expect(list.className).toContain('bg-[var(--glass-dark)]')
     expect(list.className).not.toContain('max-[899px]:')
-    expect(within(list).getByText(experience[1].period).className).toContain('text-[var(--ember)]')
+    expect(within(list).getByText(experience[2].period).className).toContain('text-[var(--ember)]')
   })
 
   test('two separate headings, no combined heading', () => {
