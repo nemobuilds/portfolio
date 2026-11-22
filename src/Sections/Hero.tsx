@@ -2,34 +2,37 @@ import { Link } from 'react-router-dom'
 import { Avatar } from '../Components/Avatar'
 import { Button } from '../Components/Button'
 
-// Hero B: the greeting is the title and the paragraph is the main text. The title
-// stays modest (28px on phones, up to 40px) so it never outweighs the paragraph.
+// Hero v2, option C: left-aligned. The greeting is a small opener line, the first
+// sentence is the big heading, the Endpoint sentence is small and muted.
+//
+// Layout: a two-column grid from 900px. The text sits in the left column; the
+// right column (data-slot="hero-right") is an empty slot on purpose, so a card,
+// image or demo can go there later without changing the layout. On phones it is
+// a single column and the empty slot takes no space.
 export default function Hero() {
   return (
     <section
       id="top"
       aria-labelledby="hero-heading"
-      className="flex justify-center px-4 pt-[112px] pb-[48px] text-center min-[760px]:px-8 min-[760px]:pt-[128px] min-[760px]:pb-[56px]"
+      className="px-4 pt-[112px] pb-[48px] min-[760px]:px-8 min-[760px]:pt-[136px] min-[760px]:pb-[64px]"
     >
-      <div className="flex min-w-0 flex-col items-center gap-6">
-        <h1
-          id="hero-heading"
-          className="m-0 inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[clamp(28px,3.2vw,40px)] font-bold text-[var(--text)]"
-          style={{ lineHeight: 1.1, letterSpacing: '-0.035em' }}
-        >
-          <span>Hi, I’m John Rogee</span>
-          <span className="min-[760px]:hidden"><Avatar size={36} /></span>
-          <span className="hidden min-[760px]:inline-flex"><Avatar size={44} /></span>
-          <em className="font-serif font-normal text-[1em] text-[var(--serif-accent)]" style={{ letterSpacing: '-0.01em' }}>
-            aka Nemo
-          </em>
-        </h1>
-        <div className="flex max-w-[60ch] flex-col gap-3">
-          <p className="m-0 text-[18px] leading-normal text-[var(--text)] min-[760px]:text-[21px]">
-            Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the
-            next version doesn’t.
+      <div className="mx-auto grid w-full max-w-[1200px] gap-10 min-[900px]:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] min-[900px]:items-center">
+        <div className="flex min-w-0 max-w-[720px] flex-col items-start gap-5">
+          <p className="m-0 inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-[16px] text-[var(--text-secondary)] min-[760px]:text-[17px]">
+            <span>Hi, I’m John Rogee</span>
+            <span className="min-[760px]:hidden"><Avatar size={28} /></span>
+            <span className="hidden min-[760px]:inline-flex"><Avatar size={32} /></span>
+            <em className="font-serif text-[1em] text-[var(--serif-accent)]">aka Nemo</em>
           </p>
-          <p className="m-0 text-[16px] leading-normal text-[var(--text-secondary)] min-[760px]:text-[18px]">
+          <h1
+            id="hero-heading"
+            className="m-0 text-[clamp(26px,3vw,36px)] font-bold text-[var(--text)]"
+            style={{ lineHeight: 1.2, letterSpacing: '-0.03em' }}
+          >
+            Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the next
+            version doesn’t.
+          </h1>
+          <p className="m-0 max-w-[60ch] text-[15px] leading-relaxed text-[var(--text-secondary)]">
             Lately I’ve been building{' '}
             <Link
               to="/projects/endpoint"
@@ -39,11 +42,13 @@ export default function Hero() {
             </Link>
             , an API health monitor that runs scheduled uptime and response-time checks.
           </p>
+          <div className="flex flex-nowrap items-center gap-3 pt-1">
+            <Button variant="primary" surface="ink" href="#projects" trailingIcon="arrow" label="See the work" />
+            <Button variant="secondary" href="#contact" label="Get in touch" />
+          </div>
         </div>
-        <div className="flex flex-nowrap items-center justify-center gap-3">
-          <Button variant="primary" surface="ink" href="#projects" trailingIcon="arrow" label="See the work" />
-          <Button variant="secondary" href="#contact" label="Get in touch" />
-        </div>
+        {/* Empty right slot: put future hero content here (see docs/content-guide.md, "Home page hero"). */}
+        <div data-slot="hero-right" aria-hidden="true" className="hidden min-[900px]:block" />
       </div>
     </section>
   )

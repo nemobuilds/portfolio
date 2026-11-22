@@ -41,23 +41,33 @@ describe('waterGradient', () => {
 })
 
 describe('Hero', () => {
-  test('the greeting is the title, kept modest so the paragraph leads', () => {
+  test('the first sentence is the big heading; the greeting is a small opener above it', () => {
     render(<MemoryRouter><Hero /></MemoryRouter>)
     const h1 = screen.getByRole('heading', { level: 1 })
-    expect(h1).toHaveTextContent('Hi, I’m John Rogee')
-    expect(h1).toHaveTextContent('aka Nemo')
-    expect(h1.className).toContain('text-[clamp(28px,3.2vw,40px)]')
+    expect(h1).toHaveTextContent(
+      'Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the next version doesn’t.',
+    )
+    expect(h1.className).toContain('text-[clamp(26px,3vw,36px)]')
+    const opener = screen.getByText('Hi, I’m John Rogee').closest('p')!
+    expect(opener).toHaveTextContent('aka Nemo')
+    expect(opener.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.queryByText(/push it until it bends/)).toBeNull()
   })
 
-  test('the paragraph uses the chosen copy and links Endpoint to its project page', () => {
+  test('left-aligned two-column grid with an empty right slot for later content', () => {
+    const { container } = render(<MemoryRouter><Hero /></MemoryRouter>)
+    const slot = container.querySelector('[data-slot="hero-right"]')!
+    expect(slot).toBeEmptyDOMElement()
+    expect(slot).toHaveAttribute('aria-hidden', 'true')
+    expect(slot.parentElement!.className).toContain('min-[900px]:grid-cols-')
+    expect(container.querySelector('#top')!.className).not.toContain('text-center')
+  })
+
+  test('the Endpoint sentence is small and muted, with Endpoint linked to its project page', () => {
     render(<MemoryRouter><Hero /></MemoryRouter>)
-    expect(
-      screen.getByText(
-        'Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the next version doesn’t.',
-      ),
-    ).toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'Endpoint' })
+    expect(link.closest('p')!.className).toContain('text-[15px]')
+    expect(link.closest('p')!.className).toContain('text-[var(--text-secondary)]')
     expect(link).toHaveAttribute('href', '/projects/endpoint')
     expect(link.closest('p')).toHaveTextContent(
       'Lately I’ve been building Endpoint, an API health monitor that runs scheduled uptime and response-time checks.',

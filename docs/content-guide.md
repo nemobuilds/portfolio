@@ -158,6 +158,19 @@ The `/certificates` page has a search box and a filter sidebar with two groups. 
 - The certification modal has a Topic row and a Type row. Each pill links to `/certificates` filtered by that category and closes the modal.
 - To add or rename a category, edit `CERT_FACETS` in `src/content/certifications.ts`.
 
+## Home page hero
+
+The hero text lives in `src/Sections/Hero.tsx` (it is code, so run `npm test` after a change).
+
+- A small opener line: "Hi, I'm John Rogee", your photo, "aka Nemo".
+- The big heading: the first sentence about what you do.
+- A small, muted sentence about what you are building lately, with a link to that project.
+- The "See the work" and "Get in touch" buttons.
+
+### The empty right slot
+
+From 900px wide, the hero is a two-column grid. The text fills the left column. The right column is an empty `<div data-slot="hero-right">`, kept on purpose so you can add something later (a "Lately" project card, a photo, a short demo) without changing the layout. Put the new content inside that `div` and remove its `aria-hidden="true"` and `hidden` classes once it has real content. On phones the hero is one column, so anything in the slot shows below the buttons.
+
 ## Experience
 
 Open `src/content/experience.ts`. Each role is one object in the `experience` list, shown on the home page in list order.

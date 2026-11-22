@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { site } from '../content/site'
 
-export function Avatar({ size, src = site.avatarPath, alt = '' }: { size: 28 | 32 | 36 | 44; src?: string; alt?: string }) {
+export function Avatar({ size, src = site.avatarPath, alt = '' }: { size: 28 | 32 | 36; src?: string; alt?: string }) {
   const [failed, setFailed] = useState(false)
   const frame = { width: size, height: size }
   if (!src || failed) {
