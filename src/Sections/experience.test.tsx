@@ -82,6 +82,16 @@ describe('Experience', () => {
     expect(img).toHaveAttribute('alt', '')
   })
 
+  test('tool tiles stay smaller than a project row (40px tiles, 11px labels)', () => {
+    const css = readFileSync(resolve(import.meta.dirname, '../index.css'), 'utf8')
+    const tile = css.match(/\.app-tile \{[^}]*\}/)![0]
+    expect(tile).toMatch(/width: 40px;/)
+    expect(tile).toMatch(/height: 40px;/)
+    render(<Experience />)
+    const label = document.querySelector('.app-cell span:last-child')!
+    expect(label.className).toContain('text-[11px]')
+  })
+
   test('every tile shows a logo with its name', () => {
     render(<Experience />)
     const tiles = document.querySelectorAll('.app-cell')
