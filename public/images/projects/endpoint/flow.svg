@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="t d">
+  <title id="t">Endpoint architecture</title>
+  <desc id="d">The Next.js dashboard calls the Spring Boot API. A scheduler in the API sends HTTP checks to monitored endpoints and stores each result in PostgreSQL. Docker runs all three services.</desc>
+  <rect width="1280" height="720" fill="#F4F6FA"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#3A4058"/>
+    </marker>
+  </defs>
+  <g font-family="Inter Tight, Arial, sans-serif" fill="#17161C">
+    <rect x="70" y="250" width="250" height="140" rx="12" fill="#FFFFFF" stroke="#7C869C" stroke-width="2"/>
+    <text x="195" y="310" text-anchor="middle" font-size="30" font-weight="700">Dashboard</text>
+    <text x="195" y="348" text-anchor="middle" font-size="22" fill="#3A4058">Next.js + React</text>
+
+    <rect x="500" y="200" width="300" height="240" rx="12" fill="#FFFFFF" stroke="#F06A16" stroke-width="3"/>
+    <text x="650" y="262" text-anchor="middle" font-size="30" font-weight="700">API</text>
+    <text x="650" y="300" text-anchor="middle" font-size="22" fill="#3A4058">Spring Boot</text>
+    <rect x="540" y="330" width="220" height="76" rx="8" fill="#FFF1E7" stroke="#F06A16" stroke-width="2"/>
+    <text x="650" y="377" text-anchor="middle" font-size="22" font-weight="600">Check scheduler</text>
+
+    <rect x="980" y="110" width="240" height="140" rx="12" fill="#FFFFFF" stroke="#7C869C" stroke-width="2"/>
+    <text x="1100" y="170" text-anchor="middle" font-size="28" font-weight="700">Monitored</text>
+    <text x="1100" y="206" text-anchor="middle" font-size="28" font-weight="700">endpoints</text>
+
+    <rect x="980" y="430" width="240" height="140" rx="12" fill="#FFFFFF" stroke="#7C869C" stroke-width="2"/>
+    <text x="1100" y="490" text-anchor="middle" font-size="28" font-weight="700">PostgreSQL</text>
+    <text x="1100" y="528" text-anchor="middle" font-size="22" fill="#3A4058">check results</text>
+
+    <path d="M320 320H492" stroke="#3A4058" stroke-width="3" marker-end="url(#a)" marker-start="url(#a)"/>
+    <text x="406" y="300" text-anchor="middle" font-size="20" fill="#3A4058">REST / JSON</text>
+    <path d="M760 345L972 200" stroke="#3A4058" stroke-width="3" marker-end="url(#a)"/>
+    <text x="900" y="248" text-anchor="middle" font-size="20" fill="#3A4058">HTTP check</text>
+    <path d="M800 400L972 480" stroke="#3A4058" stroke-width="3" marker-end="url(#a)"/>
+    <text x="870" y="470" text-anchor="middle" font-size="20" fill="#3A4058">save result</text>
+
+    <rect x="40" y="620" width="1200" height="60" rx="10" fill="none" stroke="#7C869C" stroke-width="2" stroke-dasharray="10 8"/>
+    <text x="640" y="658" text-anchor="middle" font-size="22" fill="#3A4058">Docker runs the dashboard, the API and the database</text>
+  </g>
+</svg>
