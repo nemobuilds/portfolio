@@ -45,13 +45,21 @@ describe('Hero', () => {
     render(<MemoryRouter><Hero /></MemoryRouter>)
     const h1 = screen.getByRole('heading', { level: 1 })
     expect(h1).toHaveTextContent(
-      'Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the next version doesn’t.',
+      'Software Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the next version doesn’t.',
     )
     expect(h1.className).toContain('text-[clamp(26px,3vw,36px)]')
     const opener = screen.getByText('Hi, I’m John Rogee').closest('p')!
     expect(opener).toHaveTextContent('aka Nemo')
     expect(opener.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.queryByText(/push it until it bends/)).toBeNull()
+  })
+
+  test('lines up with the other home sections: side padding inside the 1200px container', () => {
+    const { container } = render(<MemoryRouter><Hero /></MemoryRouter>)
+    const section = container.querySelector('#top')!
+    expect(section.className).not.toMatch(/(^|\s)px-/)
+    const inner = section.firstElementChild!
+    for (const cls of ['max-w-[1200px]', 'mx-auto', 'px-4', 'min-[760px]:px-8']) expect(inner.className).toContain(cls)
   })
 
   test('left-aligned two-column grid with an empty right slot for later content', () => {
