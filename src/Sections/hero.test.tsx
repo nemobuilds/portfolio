@@ -41,15 +41,37 @@ describe('waterGradient', () => {
 })
 
 describe('Hero', () => {
-  test('h1 text and single accent word', () => {
+  test('the first sentence is the big heading; the greeting is a small opener above it', () => {
     render(<MemoryRouter><Hero /></MemoryRouter>)
     const h1 = screen.getByRole('heading', { level: 1 })
-    expect(h1).toHaveTextContent('I build software with care, push it until it bends, and make it stronger.')
-    const accents = h1.querySelectorAll('.accent-word')
-    expect(accents).toHaveLength(1)
-    expect(accents[0]).toHaveTextContent('stronger')
-    expect(screen.getByText('aka Nemo')).toBeInTheDocument()
-    expect(screen.getByText('Building software, and learning how to keep it fast and up.')).toBeInTheDocument()
+    expect(h1).toHaveTextContent(
+      'Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the next version doesn’t.',
+    )
+    expect(h1.className).toContain('text-[clamp(26px,3vw,36px)]')
+    const opener = screen.getByText('Hi, I’m John Rogee').closest('p')!
+    expect(opener).toHaveTextContent('aka Nemo')
+    expect(opener.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.queryByText(/push it until it bends/)).toBeNull()
+  })
+
+  test('left-aligned two-column grid with an empty right slot for later content', () => {
+    const { container } = render(<MemoryRouter><Hero /></MemoryRouter>)
+    const slot = container.querySelector('[data-slot="hero-right"]')!
+    expect(slot).toBeEmptyDOMElement()
+    expect(slot).toHaveAttribute('aria-hidden', 'true')
+    expect(slot.parentElement!.className).toContain('min-[900px]:grid-cols-')
+    expect(container.querySelector('#top')!.className).not.toContain('text-center')
+  })
+
+  test('the Endpoint sentence is small and muted, with Endpoint linked to its project page', () => {
+    render(<MemoryRouter><Hero /></MemoryRouter>)
+    const link = screen.getByRole('link', { name: 'Endpoint' })
+    expect(link.closest('p')!.className).toContain('text-[15px]')
+    expect(link.closest('p')!.className).toContain('text-[var(--text-secondary)]')
+    expect(link).toHaveAttribute('href', '/projects/endpoint')
+    expect(link.closest('p')).toHaveTextContent(
+      'Lately I’ve been building Endpoint, an API health monitor that runs scheduled uptime and response-time checks.',
+    )
   })
 
   test('top padding clears the floating pill (16px offset + ~54px tall)', () => {
