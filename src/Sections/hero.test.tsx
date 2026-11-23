@@ -45,7 +45,7 @@ describe('Hero', () => {
     render(<MemoryRouter><Hero /></MemoryRouter>)
     const h1 = screen.getByRole('heading', { level: 1 })
     expect(h1.textContent!.replace(/\s+/g, ' ').trim()).toBe(
-      'Software Engineer from Manila. I build full-stack applications that scale, shaped by creativity and love for the craft.',
+      'Software Engineer from Manila. I build full-stack applications with intention, creativity, and love for the craft.',
     )
     expect(h1.className).toContain('text-[clamp(26px,3vw,36px)]')
     const opener = screen.getByText('Hi, I’m John Rogee').closest('p')!

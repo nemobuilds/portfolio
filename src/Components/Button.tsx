@@ -27,7 +27,7 @@ function palette(variant: Props['variant'], surface: Props['surface']): string {
     return 'bg-[#17161C] text-[#F4EEE3] border border-[rgba(244,238,227,0.2)] hover:bg-[#2B2A33]'
   }
   if (variant === 'primary') {
-    return 'bg-[#F06A16] text-[#17161C] border border-[rgba(23,22,28,0.12)] hover:bg-[#FF8133] active:bg-[#D85A0C]'
+    return 'bg-[#FF8237] text-[#17161C] border border-[rgba(23,22,28,0.12)] hover:bg-[#FF9D63] active:bg-[#FF6C15]'
   }
   if (surface === 'glass') {
     if (variant === 'text') return 'bg-transparent text-[#EFECE3] border border-transparent hover:underline'

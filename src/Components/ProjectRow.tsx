@@ -29,7 +29,7 @@ export function ProjectRow({ project, selected, onSelect, onPreview }: Props) {
         <span className="truncate text-[12px] text-[#3A4058]">{project.stack.join(' · ')}</span>
       </span>
       {selected ? (
-        <span aria-hidden="true" className="size-2.5 rounded-full bg-[#F06A16] shadow-[0_0_0_3px_rgba(240,106,22,0.25)]" />
+        <span aria-hidden="true" className="size-2.5 rounded-full bg-[#FF8237] shadow-[0_0_0_3px_rgba(255,130,55,0.25)]" />
       ) : (
         <span aria-hidden="true" className="flex text-[#3A4058]"><Icon name="arrow" size={14} /></span>
       )}

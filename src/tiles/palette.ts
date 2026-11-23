@@ -1,6 +1,6 @@
-export const BOOT_PALETTE = ['#E9F0F9', '#93B1E6', '#3557C2', '#3C528C', '#93B1E6', '#3557C2', '#3C528C', '#93B1E6', '#FF9A52', '#3557C2', '#3C528C', '#93B1E6']
-export const TO_DARK = ['#3557C2', '#93B1E6', '#3C528C', '#5B7BD8', '#E9F0F9', '#FF9A52']
-export const TO_LIGHT = ['#3557C2', '#93B1E6', '#22345F', '#5B7BD8', '#3C528C', '#F06A16']
+export const BOOT_PALETTE = ['#E9F0F9', '#93B1E6', '#3557C2', '#3C528C', '#93B1E6', '#3557C2', '#3C528C', '#93B1E6', '#FFB582', '#3557C2', '#3C528C', '#93B1E6']
+export const TO_DARK = ['#3557C2', '#93B1E6', '#3C528C', '#5B7BD8', '#E9F0F9', '#FFB582']
+export const TO_LIGHT = ['#3557C2', '#93B1E6', '#22345F', '#5B7BD8', '#3C528C', '#FF8237']
 
 function hexRGB(h: string): [number, number, number] {
   const n = parseInt(h.slice(1), 16)

@@ -69,7 +69,7 @@ describe('Experience', () => {
     expect(focus.className).toContain('text-[var(--ember)]')
     expect(focus.className).toContain('font-bold')
     const css = readFileSync(resolve(import.meta.dirname, '../index.css'), 'utf8')
-    expect(css).toMatch(/--ember: #FF9A52;/)
+    expect(css).toMatch(/--ember: #FFB582;/)
   })
 
   test('says "Now," once the start month has passed', () => {

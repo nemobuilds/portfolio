@@ -69,10 +69,10 @@ const BUBBLES = 26
 const ANGLER_FOG = 0.1
 
 const COL = {
-  body: '#FF7B1C', bodyG: '#C9480A', rim: '#E0560C', rimG: '#8F320A',
+  body: '#FF8237', bodyG: '#E3480B', rim: '#F25815', rimG: '#A8340C',
   band: '#F6EFE2', bandG: '#B9AE98', edge: '#2A1A12', edgeG: '#6B4A36',
-  fin: '#FF9A3D', finDark: '#B8430A', tail: '#FF9A3D', tailG: '#B8430A',
-  spine: '#D9560E', spineG: '#2A1A12', soft: '#FFA24A', softG: '#B8430A',
+  fin: '#FFA158', finDark: '#D2440B', tail: '#FFA158', tailG: '#D2440B',
+  spine: '#F05712', spineG: '#2A1A12', soft: '#FFA965', softG: '#D2440B',
 }
 type Tile = [fill: string, glyphFill: string, glyph: string]
 const FISH_TILE: Record<string, Tile> = {

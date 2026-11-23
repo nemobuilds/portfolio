@@ -160,7 +160,7 @@ function FilterSheet({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-12 flex-1 cursor-pointer rounded-[7px] border border-[rgba(23,22,28,0.12)] bg-[#F06A16] text-[15px] font-bold text-[#17161C] hover:bg-[#FF8133]"
+            className="min-h-12 flex-1 cursor-pointer rounded-[7px] border border-[rgba(23,22,28,0.12)] bg-[#FF8237] text-[15px] font-bold text-[#17161C] hover:bg-[#FF9D63]"
           >
             {showLabel}
           </button>
