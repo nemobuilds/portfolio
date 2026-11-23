@@ -4,6 +4,7 @@ import { CELL, clownfishAlpha, fishCount, fishHalfHeight, fishLength, makeFish, 
 import { sideClassify, type Cell } from './sideFish'
 import { initialAngler, stepAngler, type AnglerState } from './angler'
 import { buildSeabed, SEABED_ROWS } from './seabed'
+import { bandHeight, cloudCell, cloudCells, makeClouds, SHIMMER_S, skyFade, stepClouds, type Cloud } from './clouds'
 import { waterColor } from '../Sections/Water'
 
 export type AquariumMode = 'home' | 'angler-only'
@@ -18,6 +19,11 @@ export type AquariumOptions = {
   gridZones(): Zone[]
   /** Viewport y of the sea floor line. Defaults to the viewport bottom. */
   floorY?(): number
+  /**
+   * The hero sky, in viewport px: where the cloud band starts, and the surface line.
+   * Above the surface there are no fish or bubbles; they fade in over FADE px below it.
+   */
+  sky?(): { cloudTop: number; surface: number } | null
 }
 
 export type AquariumEngine = { setDepth(d: number): void; start(): void; stop(): void; destroy(): void }
@@ -25,7 +31,11 @@ export type AquariumEngine = { setDepth(d: number): void; start(): void; stop():
 const CS = CELL
 const FADE = 180
 const FADE_STRIPS = 12
-const FONT = `500 ${Math.round(CS * 0.9)}px "Geist Mono Variable", "Geist Mono", ui-monospace, monospace`
+const fontFor = (cell: number) => `500 ${Math.round(cell * 0.9)}px "Geist Mono Variable", "Geist Mono", ui-monospace, monospace`
+const FONT = fontFor(CS)
+/** Clouds over text (calm rects) show at this strength, so the headline always wins. */
+const CLOUD_CALM_ALPHA = 0.3
+const CLOUD_ALPHA = 0.9
 const FISH_DEPTHS = [0.05, 0.85, 0.2, 0.65]
 const BUBBLES = 26
 const CALM_FOG = 0.88
@@ -93,6 +103,7 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
   let water = waterColor(depth)
   let fish: Fish[] = []
   let bubbles: Bubble[] = []
+  let clouds: Cloud[] = []
   let angler: AnglerState = initialAngler()
   let anglerCol = 0
   let anglerFace = 1
@@ -208,10 +219,12 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     canvas.width = Math.round(W * dpr)
     canvas.height = Math.round(H * dpr)
     if (home) {
-      paintGrid(gridLight, 'rgba(30,50,130,0.13)', 'rgba(30,50,130,0.22)')
+      // the hero sky grid at about half its old strength, so the clouds read and the sky stays calm
+      paintGrid(gridLight, 'rgba(30,50,130,0.065)', 'rgba(30,50,130,0.11)')
       paintGrid(gridDeep, 'rgba(160,180,255,0.10)', 'rgba(160,180,255,0.18)')
-      // a phone's URL bar changes only the height: keep the fish where they are
+      // a phone's URL bar changes only the height: keep the fish and clouds where they are
       if (widthChanged || fish.length === 0) populate()
+      if (widthChanged || clouds.length === 0) clouds = opts.sky ? makeClouds(W) : []
     }
     paintSeabed()
   }
@@ -304,6 +317,32 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     ctx.globalAlpha = 1
   }
 
+  /** The cloud band in the hero sky: fish-style tiles in sky colours, faint over the text. */
+  function drawClouds(t: number) {
+    const sky = opts.sky?.()
+    if (!ctx || !sky || clouds.length === 0) return
+    const cell = cloudCell(W)
+    if (sky.cloudTop + bandHeight(W) < 0 || sky.cloudTop > H) return
+    const step = still ? 0 : Math.floor(t / SHIMMER_S)
+    const calm = opts.calmRects().filter((r) => r.bottom > sky.cloudTop && r.top < sky.cloudTop + bandHeight(W))
+    const inCalm = (x: number, y: number) => calm.some((r) => x + cell > r.left && x < r.right && y + cell > r.top && y < r.bottom)
+    ctx.font = fontFor(cell)
+    for (const c of clouds) {
+      for (const k of cloudCells(c, step)) {
+        const x = Math.round(c.x + k.col * cell)
+        const y = Math.round(sky.cloudTop + (c.row + k.row) * cell)
+        if (x + cell < 0 || x > W) continue
+        ctx.globalAlpha = inCalm(x, y) ? CLOUD_CALM_ALPHA : CLOUD_ALPHA
+        ctx.fillStyle = k.tile.fill
+        ctx.fillRect(x + 1, y + 1, cell - 1, cell - 1)
+        ctx.fillStyle = k.tile.ink
+        ctx.fillText(k.glyph, x + cell / 2, y + cell / 2 + 1)
+      }
+    }
+    ctx.globalAlpha = 1
+    ctx.font = FONT
+  }
+
   function drawSeabed(floor: number) {
     if (!ctx || !seabedCanvas.width) return
     if (floor <= 0 || floor - SEABED_ROWS >= Math.ceil(H / CS)) return
@@ -314,10 +353,15 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     const cols = Math.ceil(W / CS)
     const rows = Math.ceil(H / CS)
     const grid = new Map<number, Put>()
+    // the hero is sky: nothing from the water shows above the surface; it fades in below it
+    const sky = opts.sky?.() ?? null
+    const above = (py: number) => (sky ? skyFade(py, sky.surface, FADE) : 0)
     for (const b of bubbles) {
       const i = Math.floor(b.x / CS)
       const j = Math.floor((((b.y % H) + H) % H) / CS)
-      if (i >= 0 && i < cols) grid.set(j * cols + i, { glyph: 'o', bubble: true, fog: 0, fish: false })
+      const k = above((j + 0.5) * CS)
+      if (k >= 1) continue
+      if (i >= 0 && i < cols) grid.set(j * cols + i, { glyph: 'o', bubble: true, fog: k, fish: false })
     }
     if (clownfishAlpha(depth) === 0) return grid
     const calm = opts.calmRects().filter((r) => r.bottom > 0 && r.top < H)
@@ -332,7 +376,10 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
       const fy = f.y
       const put = (i: number, j: number, cell: Omit<Put, 'fog' | 'fish'>, px: number, py: number) => {
         if (i < 0 || j < 0 || i >= cols || j >= rows) return
-        grid.set(j * cols + i, { ...cell, fish: true, fog: inCalm(px, py) ? Math.max(fog, CALM_FOG) : fog })
+        const k = above(py)
+        if (k >= 1) return
+        const base = inCalm(px, py) ? Math.max(fog, CALM_FOG) : fog
+        grid.set(j * cols + i, { ...cell, fish: true, fog: Math.max(base, k) })
       }
       const i0 = Math.max(0, Math.floor(fx / CS) - 1)
       const i1 = Math.min(cols - 1, Math.ceil(f.x / CS) + 1)
@@ -410,8 +457,9 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
       }
     }
     ctx.globalAlpha = 1
+    drawClouds(t)
 
-    // the grid sits on top: fish swim under it
+    // the grid sits on top: fish and clouds sit under it
     const src = depth < 0.5 ? gridLight : gridDeep
     for (const z of opts.gridZones()) drawZone(src, z.top, z.bottom)
   }
@@ -428,6 +476,7 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
         b.y -= dt * 14 * b.s
         b.x += Math.sin(t + b.y * 0.02) * 0.15
       }
+      stepClouds(clouds, dt, W)
     }
     const isDeep = home ? floorRow() < Math.ceil(H / CS) - 1 : true
     const prev = angler.phase

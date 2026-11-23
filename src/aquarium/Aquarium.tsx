@@ -4,8 +4,18 @@ import { useScrollDepth } from '../hooks/useScrollDepth'
 import type { AquariumEngine, AquariumMode, Zone } from './renderer'
 
 // Text that sits straight on the water: hero copy, section headings, contact text, footer.
-const CALM = '#top h1, #top > div > p, main h2, #contact > div > *, body footer'
+const CALM = '#top h1, #top p, main h2, #contact > div > *, body footer'
 const GRID_FADE = 180
+/** The cloud band starts this far below the hero top: just under the floating navbar. */
+const CLOUD_TOP = 70
+
+/** The hero is sky: clouds in a band under the navbar; the surface sits where the hero grid starts to fade. */
+function homeSky(): { cloudTop: number; surface: number } | null {
+  const hero = document.getElementById('top')
+  if (!hero) return null
+  const r = hero.getBoundingClientRect()
+  return { cloudTop: r.top + CLOUD_TOP, surface: r.bottom - GRID_FADE * 0.5 }
+}
 
 const rects = (selector: string) => Array.from(document.querySelectorAll(selector), (el) => el.getBoundingClientRect())
 
@@ -63,6 +73,7 @@ export function Aquarium({ mode }: { mode: AquariumMode }) {
         reducedMotion,
         calmRects: () => (home ? rects(CALM) : []),
         gridZones: () => (home ? homeZones() : []),
+        sky: home ? homeSky : undefined,
         // 404: the floor sits on the footer, never below the viewport bottom
         floorY: home ? footerTop : () => Math.min(footerTop(), window.innerHeight),
       })
