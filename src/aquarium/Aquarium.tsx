@@ -4,8 +4,41 @@ import { useScrollDepth } from '../hooks/useScrollDepth'
 import type { AquariumEngine, AquariumMode, Zone } from './renderer'
 
 // Text that sits straight on the water: hero copy, section headings, contact text, footer.
-const CALM = '#top h1, #top > div > p, main h2, #contact > div > *, body footer'
+const CALM = '#top h1, #top p, main h2, #contact > div > *, body footer'
+// Controls, headings and cards (including the tech stack tiles): a whole fish, bubble or
+// cloud passing one fades down, then back up when it leaves. Nothing is clipped.
+const CLEAR = 'main a, main button, main h1, main h2, main h3, main article, main li, main [role="button"]'
+// The page sections fish live in. Each gets its own fish, which scroll away with it.
+// Contact is left out: by that depth the clownfish have faded out (clownfishAlpha).
+const FISH_REGIONS = ['#projects', '#experience', '#certificates']
 const GRID_FADE = 180
+
+function homeRegions(): Zone[] {
+  return FISH_REGIONS.flatMap((sel) => {
+    const el = document.querySelector(sel)
+    if (!el) return []
+    const r = el.getBoundingClientRect()
+    return [{ top: r.top, bottom: r.bottom }]
+  })
+}
+/** The cloud band starts this far below the hero top: just under the floating navbar (16px + ~54px). */
+const CLOUD_TOP = 76
+/** Gap kept between the lowest cloud and the hero's first line of text. */
+const CLOUD_GAP = 8
+
+/**
+ * The hero is sky: the clouds get the room between the navbar and the hero's first line
+ * of text (the greeting), so no tile overlaps the text or the photo; the surface sits
+ * where the hero grid starts to fade.
+ */
+function homeSky(): { cloudTop: number; cloudBottom: number; surface: number } | null {
+  const hero = document.getElementById('top')
+  if (!hero) return null
+  const r = hero.getBoundingClientRect()
+  const first = hero.querySelector('p, h1')
+  const textTop = first ? first.getBoundingClientRect().top : r.top + CLOUD_TOP
+  return { cloudTop: r.top + CLOUD_TOP, cloudBottom: textTop - CLOUD_GAP, surface: r.bottom - GRID_FADE * 0.5 }
+}
 
 const rects = (selector: string) => Array.from(document.querySelectorAll(selector), (el) => el.getBoundingClientRect())
 
@@ -63,6 +96,9 @@ export function Aquarium({ mode }: { mode: AquariumMode }) {
         reducedMotion,
         calmRects: () => (home ? rects(CALM) : []),
         gridZones: () => (home ? homeZones() : []),
+        sky: home ? homeSky : undefined,
+        clearRects: () => (home ? rects(CLEAR) : []),
+        regions: home ? homeRegions : undefined,
         // 404: the floor sits on the footer, never below the viewport bottom
         floorY: home ? footerTop : () => Math.min(footerTop(), window.innerHeight),
       })

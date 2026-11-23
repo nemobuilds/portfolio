@@ -11,6 +11,42 @@ export type Fish = {
   scale: number
   /** Slow-down from personal space, 1 = none */
   ease?: number
+  /** Whole-sprite opacity, eased toward VEIL_MIN while the fish overlaps a control or heading. */
+  veil?: number
+  /**
+   * The page region (section) this fish lives in. x and y are then local to that
+   * region's top-left, so the fish scrolls away with the page like the content.
+   */
+  region?: number
+}
+
+/** Opacity of a sprite (fish, bubble or cloud) while it passes a control, heading or card. */
+export const VEIL_MIN = 0.25
+/** Seconds for a sprite to fade fully down or back up. */
+export const VEIL_S = 0.3
+
+/**
+ * Moves a sprite's opacity toward its target at a steady rate, so the whole sprite fades
+ * over VEIL_S instead of jumping. The shape itself is never clipped.
+ */
+export function easeVeil(current: number, target: number, dt: number): number {
+  const step = ((1 - VEIL_MIN) * dt) / VEIL_S
+  if (current < target) return Math.min(target, current + step)
+  return Math.max(target, current - step)
+}
+
+export type Box = { left: number; top: number; right: number; bottom: number }
+
+/** True when the box overlaps any of the rects (viewport px). */
+export function boxHitsAny(box: Box, rects: readonly Box[]): boolean {
+  return rects.some((r) => box.right > r.left && box.left < r.right && box.bottom > r.top && box.top < r.bottom)
+}
+
+/** The fish's on-screen box: the same cells the renderer draws. */
+export function fishBox(f: Fish): Box {
+  const L = fishLength(f)
+  const h = fishHalfHeight(f) * 1.8
+  return { left: f.x - L - CELL, top: f.y - h, right: f.x + CELL, bottom: f.y + h }
 }
 
 export type Bounds = { width: number; height: number }

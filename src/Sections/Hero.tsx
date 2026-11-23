@@ -14,7 +14,9 @@ export default function Hero() {
     <section
       id="top"
       aria-labelledby="hero-heading"
-      className="pt-[112px] pb-[48px] min-[760px]:pt-[136px] min-[760px]:pb-[64px]"
+      // Top padding leaves room for the sky's cloud band between the navbar and the greeting
+      // (src/aquarium: 6 tile rows, 10px on phones and 14px wider, plus a small gap).
+      className="pt-[150px] pb-[48px] min-[760px]:pt-[172px] min-[760px]:pb-[64px]"
     >
       {/* Same container as the other home sections (max 1200px, side padding inside it), so the hero
           text lines up with the Projects and Experience headings. */}
@@ -31,8 +33,8 @@ export default function Hero() {
             className="m-0 text-[clamp(26px,3vw,36px)] font-bold text-[var(--text)]"
             style={{ lineHeight: 1.2, letterSpacing: '-0.03em' }}
           >
-            Software Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the next
-            version doesn’t.
+            Software Engineer from Manila. I build full-stack applications that scale, shaped by creativity and love for the
+            craft.
           </h1>
           <p className="m-0 max-w-[60ch] text-[15px] leading-relaxed text-[var(--text-secondary)]">
             Lately I’ve been building{' '}
