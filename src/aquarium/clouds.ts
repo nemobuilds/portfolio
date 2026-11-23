@@ -37,7 +37,8 @@ const BAND: readonly [ShapeName, number, number][] = [
   ['small', 0.76, 2],
 ]
 
-export type Cloud = { shape: ShapeName; x: number; row: number; seed: number }
+/** veil: the whole cloud's opacity, eased down while it passes text (the cloud is never clipped). */
+export type Cloud = { shape: ShapeName; x: number; row: number; seed: number; veil?: number }
 
 export const shapeCols = (shape: ShapeName) => Math.max(...CLOUD_SHAPES[shape].map((r) => r.length))
 export const shapeRows = (shape: ShapeName) => CLOUD_SHAPES[shape].length

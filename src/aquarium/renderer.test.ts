@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { bandHeight, CLOUD_TILES } from './clouds'
+import { VEIL_MIN } from './fish'
 import { createAquarium, type AquariumOptions } from './renderer'
 
-type Rect = { x: number; y: number; fill: string }
+type Rect = { x: number; y: number; fill: string; alpha: number }
 
 // jsdom has no canvas. Each canvas gets its own recording 2D context, so the test can
 // read what the visible tank drew without the offscreen grid and seabed canvases.
@@ -13,7 +14,9 @@ function recordingContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   const state: Record<string | symbol, unknown> = { fillStyle: '' }
   return new Proxy(state, {
     get(target, key) {
-      if (key === 'fillRect') return (x: number, y: number) => rects.push({ x, y, fill: String(target.fillStyle) })
+      if (key === 'fillRect')
+        return (x: number, y: number) =>
+          rects.push({ x, y, fill: String(target.fillStyle), alpha: typeof target.globalAlpha === 'number' ? target.globalAlpha : 1 })
       if (key === 'clearRect') return () => rects.splice(0)
       if (key in target) return target[key]
       if (key === 'createLinearGradient') return () => ({ addColorStop: () => {} })
@@ -118,12 +121,53 @@ describe('hero sky in the tank', () => {
     e.destroy()
   })
 
-  test('fish never draw inside controls or headings', () => {
-    const canvas = document.createElement('canvas')
+  test('a fish passing a control or heading stays whole and fades as one sprite', () => {
+    const water = { cloudTop: -2000, cloudBottom: -1900, surface: -1000 }
+    const free = document.createElement('canvas')
+    const a = engine(free, water)
+    a.start()
+    const open = recorders.get(free)!.slice()
+    a.destroy()
+
+    const covered = document.createElement('canvas')
     const whole = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight, width: window.innerWidth, height: window.innerHeight } as DOMRect
-    const e = engine(canvas, { cloudTop: -2000, cloudBottom: -1900, surface: -1000 }, { clearRects: () => [whole] })
+    const b = engine(covered, water, { clearRects: () => [whole] })
+    b.start()
+    const behind = recorders.get(covered)!.slice()
+    b.destroy()
+
+    expect(open.length).toBeGreaterThan(0)
+    // the same tiles in the same places: nothing is clipped out of the fish
+    expect(behind.map((r) => `${r.x},${r.y},${r.fill}`)).toEqual(open.map((r) => `${r.x},${r.y},${r.fill}`))
+    // every tile is fainter, by the same factor, so the whole fish fades together
+    for (const r of behind) expect(r.alpha).toBeLessThanOrEqual(VEIL_MIN + 1e-9)
+    const ratios = new Set(behind.map((r, i) => (r.alpha / open[i].alpha).toFixed(6)))
+    expect(ratios.size).toBe(1)
+  })
+
+  test('a cloud over text fades as a whole cloud, never tile by tile', () => {
+    const canvas = document.createElement('canvas')
+    const text = { left: 0, top: 0, right: 200, bottom: window.innerHeight, width: 200, height: window.innerHeight } as DOMRect
+    const e = engine(canvas, roomy(70), { calmRects: () => [text] })
     e.start()
-    expect(recorders.get(canvas)!).toEqual([])
+    const clouds = recorders.get(canvas)!.filter((r) => SKY_FILLS.has(r.fill))
+    expect(clouds.length).toBeGreaterThan(0)
+    // split the tiles into clouds by the gaps between them; each cloud has one opacity
+    const sorted = clouds.slice().sort((p, q) => p.x - q.x)
+    const groups: Rect[][] = []
+    for (const r of sorted) {
+      const g = groups[groups.length - 1]
+      if (g && r.x - g[g.length - 1].x <= 30) g.push(r)
+      else groups.push([r])
+    }
+    expect(groups.length).toBeGreaterThan(1)
+    for (const g of groups) expect(new Set(g.map((r) => r.alpha.toFixed(4))).size).toBe(1)
+    // a cloud over the text column (x < 200) is faded; the others are at full strength
+    for (const g of groups) {
+      const overText = g.some((r) => r.x < 200)
+      if (overText) expect(g[0].alpha).toBeLessThan(0.9)
+      else expect(g[0].alpha).toBeCloseTo(0.9)
+    }
     e.destroy()
   })
 })

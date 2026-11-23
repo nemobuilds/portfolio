@@ -1,10 +1,27 @@
 import { mix } from './color'
 import { seeded } from './rng'
-import { CELL, clownfishAlpha, fishCount, fishHalfHeight, fishLength, makeFish, needsRespawn, respawn, separate, stepFish, type Fish } from './fish'
+import {
+  boxHitsAny,
+  CELL,
+  clownfishAlpha,
+  easeVeil,
+  fishBox,
+  fishCount,
+  fishHalfHeight,
+  fishLength,
+  makeFish,
+  needsRespawn,
+  respawn,
+  separate,
+  stepFish,
+  VEIL_MIN,
+  type Box,
+  type Fish,
+} from './fish'
 import { sideClassify, type Cell } from './sideFish'
 import { initialAngler, stepAngler, type AnglerState } from './angler'
 import { buildSeabed, SEABED_ROWS } from './seabed'
-import { cloudCells, fitCell, makeClouds, SHIMMER_S, skyFade, stepClouds, type Cloud } from './clouds'
+import { cloudCells, fitCell, makeClouds, shapeCols, shapeRows, SHIMMER_S, skyFade, stepClouds, type Cloud } from './clouds'
 import { waterColor } from '../Sections/Water'
 
 export type AquariumMode = 'home' | 'angler-only'
@@ -25,7 +42,10 @@ export type AquariumOptions = {
    * Above the surface there are no fish or bubbles; they fade in over FADE px below it.
    */
   sky?(): { cloudTop: number; cloudBottom: number; surface: number } | null
-  /** Viewport rects of controls and headings. Fish and bubbles never draw inside them. */
+  /**
+   * Viewport rects of controls, headings and cards. A whole fish, bubble or cloud that
+   * overlaps one (or calm text) fades to VEIL_MIN; sprites are never clipped.
+   */
   clearRects?(): DOMRect[]
 }
 
@@ -36,12 +56,9 @@ const FADE = 180
 const FADE_STRIPS = 12
 const fontFor = (cell: number) => `500 ${Math.round(cell * 0.9)}px "Geist Mono Variable", "Geist Mono", ui-monospace, monospace`
 const FONT = fontFor(CS)
-/** Clouds over text (calm rects) show at this strength, so the headline always wins. */
-const CLOUD_CALM_ALPHA = 0.3
 const CLOUD_ALPHA = 0.9
 const FISH_DEPTHS = [0.05, 0.85, 0.2, 0.65]
 const BUBBLES = 26
-const CALM_FOG = 0.88
 const ANGLER_FOG = 0.1
 
 const COL = {
@@ -87,8 +104,9 @@ const ANG_TILE: Record<string, Tile> = {
 const ANG_GLYPH: Record<string, string> = { v: '#EDE6D2', '^': '#EDE6D2', '-': '#8A7FA8', '/': '#8A7FA8', '\\': '#8A7FA8', '~': '#6B5F8A' }
 const LURE_HALO = [0, 0.22, 0.1, 0.045]
 
-type Bubble = { x: number; y: number; s: number }
-type Put = { fill?: Tile; glyph?: string; ink?: string; eye?: boolean; bubble?: boolean; fog: number; fish: boolean }
+type Bubble = { x: number; y: number; s: number; veil?: number }
+/** alpha: the whole sprite's opacity (its veil), applied to every one of its cells alike. */
+type Put = { fill?: Tile; glyph?: string; ink?: string; eye?: boolean; bubble?: boolean; fog: number; fish: boolean; alpha: number }
 
 export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions): AquariumEngine {
   const ctx = canvas.getContext('2d')
@@ -222,8 +240,9 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     canvas.width = Math.round(W * dpr)
     canvas.height = Math.round(H * dpr)
     if (home) {
-      // the hero sky grid at about half its old strength, so the clouds read and the sky stays calm
-      paintGrid(gridLight, 'rgba(30,50,130,0.065)', 'rgba(30,50,130,0.11)')
+      // the hero sky grid is only a faint hint (about a quarter of its original strength),
+      // so the clouds read and the sky stays calm
+      paintGrid(gridLight, 'rgba(30,50,130,0.033)', 'rgba(30,50,130,0.055)')
       paintGrid(gridDeep, 'rgba(160,180,255,0.10)', 'rgba(160,180,255,0.18)')
       // a phone's URL bar changes only the height: keep the fish and clouds where they are
       if (widthChanged || fish.length === 0) populate()
@@ -328,15 +347,14 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     const cell = fitCell(W, sky.cloudBottom - sky.cloudTop)
     if (!cell || sky.cloudBottom < 0 || sky.cloudTop > H) return
     const step = still ? 0 : Math.floor(t / SHIMMER_S)
-    const calm = opts.calmRects().filter((r) => r.bottom > sky.cloudTop && r.top < sky.cloudBottom)
-    const inCalm = (x: number, y: number) => calm.some((r) => x + cell > r.left && x < r.right && y + cell > r.top && y < r.bottom)
     ctx.font = fontFor(cell)
     for (const c of clouds) {
+      // the whole cloud fades together; no tile is dimmed on its own
+      ctx.globalAlpha = CLOUD_ALPHA * (c.veil ?? 1)
       for (const k of cloudCells(c, step)) {
         const x = Math.round(c.x + k.col * cell)
         const y = Math.round(sky.cloudTop + (c.row + k.row) * cell)
-        if (x + cell < 0 || x > W) continue
-        ctx.globalAlpha = inCalm(x, y) ? CLOUD_CALM_ALPHA : CLOUD_ALPHA
+        if (x + cell <= 0 || x >= W) continue
         ctx.fillStyle = k.tile.fill
         ctx.fillRect(x + 1, y + 1, cell - 1, cell - 1)
         ctx.fillStyle = k.tile.ink
@@ -360,21 +378,14 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     // the hero is sky: nothing from the water shows above the surface; it fades in below it
     const sky = opts.sky?.() ?? null
     const above = (py: number) => (sky ? skyFade(py, sky.surface, FADE) : 0)
-    // controls and headings: the fish swim behind them, so no tile is drawn inside one
-    const clear = (opts.clearRects?.() ?? []).filter((r) => r.bottom > 0 && r.top < H && r.width > 0)
-    const inClear = (px: number, py: number) =>
-      clear.some((r) => px + CS / 2 > r.left && px - CS / 2 < r.right && py + CS / 2 > r.top && py - CS / 2 < r.bottom)
     for (const b of bubbles) {
       const i = Math.floor(b.x / CS)
       const j = Math.floor((((b.y % H) + H) % H) / CS)
       const k = above((j + 0.5) * CS)
-      if (k >= 1 || inClear((i + 0.5) * CS, (j + 0.5) * CS)) continue
-      if (i >= 0 && i < cols) grid.set(j * cols + i, { glyph: 'o', bubble: true, fog: k, fish: false })
+      if (k >= 1) continue
+      if (i >= 0 && i < cols) grid.set(j * cols + i, { glyph: 'o', bubble: true, fog: k, fish: false, alpha: b.veil ?? 1 })
     }
     if (clownfishAlpha(depth) === 0) return grid
-    const calm = opts.calmRects().filter((r) => r.bottom > 0 && r.top < H)
-    const inCalm = (x: number, y: number) =>
-      calm.some((r) => x > r.left - CS && x < r.right + CS && y > r.top - CS && y < r.bottom + CS)
     const order = fish.slice().sort((a, b) => b.depth - a.depth)
     for (const f of order) {
       const fog = 0.08 + f.depth * 0.62
@@ -382,12 +393,13 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
       const half = fishHalfHeight(f)
       const fx = f.x - L
       const fy = f.y
-      const put = (i: number, j: number, cell: Omit<Put, 'fog' | 'fish'>, px: number, py: number) => {
+      // every cell of this fish gets the same opacity: the shape always stays complete
+      const alpha = f.veil ?? 1
+      const put = (i: number, j: number, cell: Omit<Put, 'fog' | 'fish' | 'alpha'>, _px: number, py: number) => {
         if (i < 0 || j < 0 || i >= cols || j >= rows) return
         const k = above(py)
-        if (k >= 1 || inClear(px, py)) return
-        const base = inCalm(px, py) ? Math.max(fog, CALM_FOG) : fog
-        grid.set(j * cols + i, { ...cell, fish: true, fog: Math.max(base, k) })
+        if (k >= 1) return
+        grid.set(j * cols + i, { ...cell, fish: true, fog: Math.max(fog, k), alpha })
       }
       const i0 = Math.max(0, Math.floor(fx / CS) - 1)
       const i1 = Math.min(cols - 1, Math.ceil(f.x / CS) + 1)
@@ -437,6 +449,8 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     drawAngler(t, floor) // deepest thing in the tank
     drawSeabed(floor) // the sand covers the angler's lower half
     if (!home) return
+    // reduced motion has no animation loop: snap the fades straight to their targets
+    if (still) updateVeils(Infinity)
 
     const cols = Math.ceil(W / CS)
     const reef = clownfishAlpha(depth)
@@ -444,7 +458,7 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     for (const [key, c] of collectCells(t)) {
       const x = (key % cols) * CS
       const y = Math.floor(key / cols) * CS
-      ctx.globalAlpha = c.fish ? reef : 0.55
+      ctx.globalAlpha = (c.fish ? reef : 0.55) * c.alpha
       if (c.eye) {
         const p = Math.round(CS * 0.5)
         const o = Math.round((CS - 1 - p) / 2)
@@ -472,7 +486,33 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     for (const z of opts.gridZones()) drawZone(src, z.top, z.bottom)
   }
 
+  /**
+   * Whole-sprite fades. A fish, bubble or cloud whose box overlaps text, a control, a
+   * heading or a card eases down to VEIL_MIN over VEIL_S, and back up when it leaves.
+   * Sprites are never clipped. dt = Infinity snaps straight to the target (reduced motion).
+   */
+  function updateVeils(dt: number) {
+    const blockers: Box[] = [...opts.calmRects(), ...(opts.clearRects?.() ?? [])].filter(
+      (r) => r.bottom > 0 && r.top < H && r.right > r.left,
+    )
+    const target = (box: Box) => (boxHitsAny(box, blockers) ? VEIL_MIN : 1)
+    for (const f of fish) f.veil = easeVeil(f.veil ?? 1, target(fishBox(f)), dt)
+    for (const b of bubbles) {
+      const y = ((b.y % H) + H) % H
+      b.veil = easeVeil(b.veil ?? 1, target({ left: b.x - CS / 2, top: y - CS / 2, right: b.x + CS / 2, bottom: y + CS / 2 }), dt)
+    }
+    const sky = opts.sky?.()
+    const cell = sky ? fitCell(W, sky.cloudBottom - sky.cloudTop) : 0
+    for (const c of clouds) {
+      if (!sky || !cell) continue
+      const top = sky.cloudTop + c.row * cell
+      const box = { left: c.x, top, right: c.x + shapeCols(c.shape) * cell, bottom: top + shapeRows(c.shape) * cell }
+      c.veil = easeVeil(c.veil ?? 1, target(box), dt)
+    }
+  }
+
   function update(dt: number, t: number) {
+    updateVeils(dt)
     if (home) {
       separate(fish, dt)
       const bounds = { width: W, height: H }

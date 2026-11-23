@@ -5,8 +5,9 @@ import type { AquariumEngine, AquariumMode, Zone } from './renderer'
 
 // Text that sits straight on the water: hero copy, section headings, contact text, footer.
 const CALM = '#top h1, #top p, main h2, #contact > div > *, body footer'
-// Controls and headings: fish swim behind these and are never drawn over them.
-const CLEAR = 'main a, main button, main h1, main h2, main h3, main [role="button"]'
+// Controls, headings and cards (including the tech stack tiles): a whole fish, bubble or
+// cloud passing one fades down, then back up when it leaves. Nothing is clipped.
+const CLEAR = 'main a, main button, main h1, main h2, main h3, main article, main li, main [role="button"]'
 const GRID_FADE = 180
 /** The cloud band starts this far below the hero top: just under the floating navbar (16px + ~54px). */
 const CLOUD_TOP = 76
