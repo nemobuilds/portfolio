@@ -33,8 +33,8 @@ export default function Hero() {
             className="m-0 text-[clamp(26px,3vw,36px)] font-bold text-[var(--text)]"
             style={{ lineHeight: 1.2, letterSpacing: '-0.03em' }}
           >
-            Software Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the next
-            version doesn’t.
+            Software Engineer from Manila. I build full-stack applications that scale, shaped by creativity and love for the
+            craft.
           </h1>
           <p className="m-0 max-w-[60ch] text-[15px] leading-relaxed text-[var(--text-secondary)]">
             Lately I’ve been building{' '}

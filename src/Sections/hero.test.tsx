@@ -44,8 +44,8 @@ describe('Hero', () => {
   test('the first sentence is the big heading; the greeting is a small opener above it', () => {
     render(<MemoryRouter><Hero /></MemoryRouter>)
     const h1 = screen.getByRole('heading', { level: 1 })
-    expect(h1).toHaveTextContent(
-      'Software Engineer from Manila. I build backend APIs and full-stack apps, then push them until they break, so the next version doesn’t.',
+    expect(h1.textContent!.replace(/\s+/g, ' ').trim()).toBe(
+      'Software Engineer from Manila. I build full-stack applications that scale, shaped by creativity and love for the craft.',
     )
     expect(h1.className).toContain('text-[clamp(26px,3vw,36px)]')
     const opener = screen.getByText('Hi, I’m John Rogee').closest('p')!
