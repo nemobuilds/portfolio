@@ -8,7 +8,19 @@ const CALM = '#top h1, #top p, main h2, #contact > div > *, body footer'
 // Controls, headings and cards (including the tech stack tiles): a whole fish, bubble or
 // cloud passing one fades down, then back up when it leaves. Nothing is clipped.
 const CLEAR = 'main a, main button, main h1, main h2, main h3, main article, main li, main [role="button"]'
+// The page sections fish live in. Each gets its own fish, which scroll away with it.
+// Contact is left out: by that depth the clownfish have faded out (clownfishAlpha).
+const FISH_REGIONS = ['#projects', '#experience', '#certificates']
 const GRID_FADE = 180
+
+function homeRegions(): Zone[] {
+  return FISH_REGIONS.flatMap((sel) => {
+    const el = document.querySelector(sel)
+    if (!el) return []
+    const r = el.getBoundingClientRect()
+    return [{ top: r.top, bottom: r.bottom }]
+  })
+}
 /** The cloud band starts this far below the hero top: just under the floating navbar (16px + ~54px). */
 const CLOUD_TOP = 76
 /** Gap kept between the lowest cloud and the hero's first line of text. */
@@ -86,6 +98,7 @@ export function Aquarium({ mode }: { mode: AquariumMode }) {
         gridZones: () => (home ? homeZones() : []),
         sky: home ? homeSky : undefined,
         clearRects: () => (home ? rects(CLEAR) : []),
+        regions: home ? homeRegions : undefined,
         // 404: the floor sits on the footer, never below the viewport bottom
         floorY: home ? footerTop : () => Math.min(footerTop(), window.innerHeight),
       })

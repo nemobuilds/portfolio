@@ -13,6 +13,11 @@ export type Fish = {
   ease?: number
   /** Whole-sprite opacity, eased toward VEIL_MIN while the fish overlaps a control or heading. */
   veil?: number
+  /**
+   * The page region (section) this fish lives in. x and y are then local to that
+   * region's top-left, so the fish scrolls away with the page like the content.
+   */
+  region?: number
 }
 
 /** Opacity of a sprite (fish, bubble or cloud) while it passes a control, heading or card. */

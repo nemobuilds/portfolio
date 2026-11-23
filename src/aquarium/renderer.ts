@@ -47,6 +47,13 @@ export type AquariumOptions = {
    * overlaps one (or calm text) fades to VEIL_MIN; sprites are never clipped.
    */
   clearRects?(): DOMRect[]
+  /**
+   * Viewport bands of the page sections the fish live in (for example Projects,
+   * Experience, Certifications). Fish and bubbles are anchored to these bands, so they
+   * scroll away with the page; only bands near the viewport are moved and drawn.
+   * Without it, the viewport itself is the one band (the old fixed-screen behaviour).
+   */
+  regions?(): Zone[]
 }
 
 export type AquariumEngine = { setDepth(d: number): void; start(): void; stop(): void; destroy(): void }
@@ -104,7 +111,12 @@ const ANG_TILE: Record<string, Tile> = {
 const ANG_GLYPH: Record<string, string> = { v: '#EDE6D2', '^': '#EDE6D2', '-': '#8A7FA8', '/': '#8A7FA8', '\\': '#8A7FA8', '~': '#6B5F8A' }
 const LURE_HALO = [0, 0.22, 0.1, 0.045]
 
-type Bubble = { x: number; y: number; s: number; veil?: number }
+/** x and y are local to the bubble's region (see AquariumOptions.regions). */
+type Bubble = { x: number; y: number; s: number; veil?: number; region: number }
+/** Fish and bubbles per region when the page provides regions. */
+const FISH_PER_REGION_WIDE = 2
+const FISH_PER_REGION_PHONE = 1
+const BUBBLES_PER_REGION = 9
 /** alpha: the whole sprite's opacity (its veil), applied to every one of its cells alike. */
 type Put = { fill?: Tile; glyph?: string; ink?: string; eye?: boolean; bubble?: boolean; fog: number; fish: boolean; alpha: number }
 
@@ -131,7 +143,6 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
   let frame = 0
   let running = false
   let last = 0
-  let lastScroll = window.scrollY
   let destroyed = false
   const fogCache = new Map<string, string>()
 
@@ -226,10 +237,42 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     }
   }
 
+  /** The bands the fish live in, in viewport px. Without page regions, the viewport. */
+  function regionList(): Zone[] {
+    return opts.regions ? opts.regions() : [{ top: 0, bottom: H }]
+  }
+  const regionHeight = (z: Zone) => Math.max(CS, z.bottom - z.top)
+  /** Only bands within half a screen of the viewport are moved and drawn. */
+  const nearView = (z: Zone | undefined): z is Zone => !!z && z.bottom > -H * 0.5 && z.top < H * 1.5
+  let regionCount = 0
+  /** A bubble rises and wraps around inside its own region. */
+  const bubbleY = (b: Bubble, z: Zone) => {
+    const h = regionHeight(z)
+    return ((b.y % h) + h) % h
+  }
+
   function populate() {
-    const n = fishCount(W, H)
-    fish = FISH_DEPTHS.slice(0, n).map((d) => makeFish(rng, { width: W, height: H }, d))
-    bubbles = Array.from({ length: BUBBLES }, () => ({ x: rng() * W, y: rng() * H, s: 0.4 + rng() }))
+    fish = []
+    bubbles = []
+    const zones = regionList()
+    regionCount = zones.length
+    if (!opts.regions) {
+      // one band, the viewport: the old behaviour (also used by tests and the 404 tank)
+      const n = fishCount(W, H)
+      fish = FISH_DEPTHS.slice(0, n).map((d) => ({ ...makeFish(rng, { width: W, height: H }, d), region: 0 }))
+      bubbles = Array.from({ length: BUBBLES }, () => ({ x: rng() * W, y: rng() * H, s: 0.4 + rng(), region: 0 }))
+      return
+    }
+    const per = W < 760 ? FISH_PER_REGION_PHONE : FISH_PER_REGION_WIDE
+    zones.forEach((z, region) => {
+      const bounds = { width: W, height: regionHeight(z) }
+      for (let k = 0; k < per; k++) {
+        const d = FISH_DEPTHS[fish.length % FISH_DEPTHS.length]
+        fish.push({ ...makeFish(rng, bounds, d), region })
+      }
+      for (let k = 0; k < BUBBLES_PER_REGION; k++)
+        bubbles.push({ x: rng() * W, y: rng() * bounds.height, s: 0.4 + rng(), region })
+    })
   }
 
   function resize() {
@@ -371,28 +414,36 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     ctx.drawImage(seabedCanvas, 0, (floor - SEABED_ROWS) * CS, W, SEABED_ROWS * CS)
   }
 
-  function collectCells(t: number): Map<number, Put> {
+  /**
+   * The cells of one region's fish and bubbles. Fish and bubbles live in page regions:
+   * their cells are laid out from `base` (the region's top rounded down to a whole cell)
+   * and the caller shifts the pass by the leftover `off` px. So they move smoothly with
+   * the page and keep the exact same shape at any scroll position.
+   */
+  function collectCells(t: number, region: number, z: Zone, base: number, off: number): Map<number, Put> {
     const cols = Math.ceil(W / CS)
-    const rows = Math.ceil(H / CS)
+    const rows = Math.ceil(H / CS) + 1
     const grid = new Map<number, Put>()
     // the hero is sky: nothing from the water shows above the surface; it fades in below it
     const sky = opts.sky?.() ?? null
-    const above = (py: number) => (sky ? skyFade(py, sky.surface, FADE) : 0)
+    const above = (py: number) => (sky ? skyFade(py + off, sky.surface, FADE) : 0)
     for (const b of bubbles) {
+      if (b.region !== region) continue
       const i = Math.floor(b.x / CS)
-      const j = Math.floor((((b.y % H) + H) % H) / CS)
+      const j = Math.floor((base + bubbleY(b, z)) / CS)
+      if (j < 0 || j >= rows) continue
       const k = above((j + 0.5) * CS)
       if (k >= 1) continue
       if (i >= 0 && i < cols) grid.set(j * cols + i, { glyph: 'o', bubble: true, fog: k, fish: false, alpha: b.veil ?? 1 })
     }
     if (clownfishAlpha(depth) === 0) return grid
-    const order = fish.slice().sort((a, b) => b.depth - a.depth)
+    const order = fish.filter((f) => (f.region ?? 0) === region).sort((a, b) => b.depth - a.depth)
     for (const f of order) {
       const fog = 0.08 + f.depth * 0.62
       const L = fishLength(f)
       const half = fishHalfHeight(f)
       const fx = f.x - L
-      const fy = f.y
+      const fy = base + f.y
       // every cell of this fish gets the same opacity: the shape always stays complete
       const alpha = f.veil ?? 1
       const put = (i: number, j: number, cell: Omit<Put, 'fog' | 'fish' | 'alpha'>, _px: number, py: number) => {
@@ -455,29 +506,36 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     const cols = Math.ceil(W / CS)
     const reef = clownfishAlpha(depth)
     const glyphInk = mix('#1D2A55', '#C8D2F5', Math.min(1, depth * 2.2))
-    for (const [key, c] of collectCells(t)) {
-      const x = (key % cols) * CS
-      const y = Math.floor(key / cols) * CS
-      ctx.globalAlpha = (c.fish ? reef : 0.55) * c.alpha
-      if (c.eye) {
-        const p = Math.round(CS * 0.5)
-        const o = Math.round((CS - 1 - p) / 2)
-        ctx.fillStyle = F('#F6EFE2', c.fog)
-        ctx.fillRect(x + 1, y + 1, CS - 1, CS - 1)
-        ctx.fillStyle = F('#0B0B0B', c.fog)
-        ctx.fillRect(x + 1 + o, y + 1 + o, p, p)
-        ctx.fillStyle = F('#FFFFFF', c.fog)
-        ctx.fillRect(x + 1 + o, y + 1 + o, 2, 2)
-      } else if (c.fill) {
-        ctx.fillStyle = F(c.fill[0], c.fog)
-        ctx.fillRect(x + 1, y + 1, CS - 1, CS - 1)
-        ctx.fillStyle = F(c.fill[1], c.fog)
-        ctx.fillText(c.fill[2], x + CS / 2, y + CS / 2 + 1)
-      } else if (c.glyph) {
-        ctx.fillStyle = F(c.ink ?? glyphInk, c.fog)
-        ctx.fillText(c.glyph, x + CS / 2, y + CS / 2 + 1)
+    regionList().forEach((z, region) => {
+      if (!nearView(z)) return // only regions near the viewport are drawn
+      const base = Math.floor(z.top / CS) * CS
+      const off = z.top - base
+      ctx.setTransform(dpr, 0, 0, dpr, 0, off * dpr)
+      for (const [key, c] of collectCells(t, region, z, base, off)) {
+        const x = (key % cols) * CS
+        const y = Math.floor(key / cols) * CS
+        ctx.globalAlpha = (c.fish ? reef : 0.55) * c.alpha
+        if (c.eye) {
+          const p = Math.round(CS * 0.5)
+          const o = Math.round((CS - 1 - p) / 2)
+          ctx.fillStyle = F('#F6EFE2', c.fog)
+          ctx.fillRect(x + 1, y + 1, CS - 1, CS - 1)
+          ctx.fillStyle = F('#0B0B0B', c.fog)
+          ctx.fillRect(x + 1 + o, y + 1 + o, p, p)
+          ctx.fillStyle = F('#FFFFFF', c.fog)
+          ctx.fillRect(x + 1 + o, y + 1 + o, 2, 2)
+        } else if (c.fill) {
+          ctx.fillStyle = F(c.fill[0], c.fog)
+          ctx.fillRect(x + 1, y + 1, CS - 1, CS - 1)
+          ctx.fillStyle = F(c.fill[1], c.fog)
+          ctx.fillText(c.fill[2], x + CS / 2, y + CS / 2 + 1)
+        } else if (c.glyph) {
+          ctx.fillStyle = F(c.ink ?? glyphInk, c.fog)
+          ctx.fillText(c.glyph, x + CS / 2, y + CS / 2 + 1)
+        }
       }
-    }
+    })
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.globalAlpha = 1
     drawClouds(t)
 
@@ -496,9 +554,16 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
       (r) => r.bottom > 0 && r.top < H && r.right > r.left,
     )
     const target = (box: Box) => (boxHitsAny(box, blockers) ? VEIL_MIN : 1)
-    for (const f of fish) f.veil = easeVeil(f.veil ?? 1, target(fishBox(f)), dt)
+    const zones = regionList()
+    for (const f of fish) {
+      const z = zones[f.region ?? 0]
+      if (!nearView(z)) continue
+      f.veil = easeVeil(f.veil ?? 1, target(fishBox({ ...f, y: z.top + f.y })), dt)
+    }
     for (const b of bubbles) {
-      const y = ((b.y % H) + H) % H
+      const z = zones[b.region]
+      if (!nearView(z)) continue
+      const y = z.top + bubbleY(b, z)
       b.veil = easeVeil(b.veil ?? 1, target({ left: b.x - CS / 2, top: y - CS / 2, right: b.x + CS / 2, bottom: y + CS / 2 }), dt)
     }
     const sky = opts.sky?.()
@@ -512,19 +577,29 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
   }
 
   function update(dt: number, t: number) {
-    updateVeils(dt)
     if (home) {
-      separate(fish, dt)
-      const bounds = { width: W, height: H }
-      for (const f of fish) {
-        stepFish(f, dt, t)
-        if (needsRespawn(f, bounds)) respawn(f, fish, bounds, rng)
-      }
+      const zones = regionList()
+      // sections appear later or change count (layout): give each its own fish again
+      if (zones.length !== regionCount) populate()
+      updateVeils(dt)
+      zones.forEach((z, region) => {
+        if (!nearView(z)) return // far-away regions stay frozen until they come near
+        const group = fish.filter((f) => (f.region ?? 0) === region)
+        const bounds = { width: W, height: regionHeight(z) }
+        separate(group, dt)
+        for (const f of group) {
+          stepFish(f, dt, t)
+          if (needsRespawn(f, bounds)) respawn(f, group, bounds, rng)
+        }
+      })
       for (const b of bubbles) {
+        if (!nearView(zones[b.region])) continue
         b.y -= dt * 14 * b.s
         b.x += Math.sin(t + b.y * 0.02) * 0.15
       }
       stepClouds(clouds, dt, W)
+    } else {
+      updateVeils(dt)
     }
     const isDeep = home ? floorRow() < Math.ceil(H / CS) - 1 : true
     const prev = angler.phase
@@ -557,16 +632,9 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
   }
 
   function onScroll() {
-    const dy = window.scrollY - lastScroll
-    lastScroll = window.scrollY
-    if (still) {
-      draw(0)
-      return
-    }
-    // the water sloshes with the scroll; bubbles drift with the page
-    const push = Math.max(-36, Math.min(36, dy * 0.3))
-    for (const f of fish) f.y -= push
-    for (const b of bubbles) b.y -= dy * 0.6
+    // fish, bubbles and clouds are anchored to the page (regions and the hero), so a
+    // scroll moves them with the content; only the still frame needs a redraw
+    if (still) draw(0)
   }
 
   function onResize() {

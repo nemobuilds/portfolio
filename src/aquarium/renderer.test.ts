@@ -14,9 +14,16 @@ function recordingContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   const state: Record<string | symbol, unknown> = { fillStyle: '' }
   return new Proxy(state, {
     get(target, key) {
+      // track the vertical shift of setTransform, so recorded y is the on-screen y (dpr is 1 in jsdom)
+      if (key === 'setTransform') return (_a: number, _b: number, _c: number, _d: number, _e: number, f: number) => (target.oy = f)
       if (key === 'fillRect')
         return (x: number, y: number) =>
-          rects.push({ x, y, fill: String(target.fillStyle), alpha: typeof target.globalAlpha === 'number' ? target.globalAlpha : 1 })
+          rects.push({
+            x,
+            y: y + (typeof target.oy === 'number' ? target.oy : 0),
+            fill: String(target.fillStyle),
+            alpha: typeof target.globalAlpha === 'number' ? target.globalAlpha : 1,
+          })
       if (key === 'clearRect') return () => rects.splice(0)
       if (key in target) return target[key]
       if (key === 'createLinearGradient') return () => ({ addColorStop: () => {} })
@@ -143,6 +150,48 @@ describe('hero sky in the tank', () => {
     for (const r of behind) expect(r.alpha).toBeLessThanOrEqual(VEIL_MIN + 1e-9)
     const ratios = new Set(behind.map((r, i) => (r.alpha / open[i].alpha).toFixed(6)))
     expect(ratios.size).toBe(1)
+  })
+
+  test('page-anchored: when the page scrolls, every fish tile moves by exactly the scroll', () => {
+    const water = { cloudTop: -2000, cloudBottom: -1900, surface: -1000 }
+    const band = { top: 100, bottom: 600 }
+    const canvas = document.createElement('canvas')
+    const e = engine(canvas, water, { regions: () => [{ ...band }] })
+    e.start()
+    const before = recorders.get(canvas)!.slice()
+    expect(before.length).toBeGreaterThan(0)
+    // the section moves 50px down the screen (not a whole 14px cell), as when the visitor
+    // scrolls up: the very same tiles, each exactly 50px lower, so the fish move smoothly
+    band.top = 150
+    band.bottom = 650
+    window.dispatchEvent(new Event('scroll'))
+    const after = recorders.get(canvas)!.slice()
+    expect(after.map((r) => `${r.x},${r.y - 50},${r.fill}`)).toEqual(before.map((r) => `${r.x},${r.y},${r.fill}`))
+    e.destroy()
+  })
+
+  test('each region gets its own fish, drawn inside its band', () => {
+    const water = { cloudTop: -2000, cloudBottom: -1900, surface: -1000 }
+    const top = { top: 0, bottom: 380 }
+    const low = { top: 390, bottom: 768 }
+    const canvas = document.createElement('canvas')
+    const e = engine(canvas, water, { regions: () => [top, low] })
+    e.start()
+    const rects = recorders.get(canvas)!
+    const margin = 60 // a fish near its band edge may stick out by about half its height
+    expect(rects.some((r) => r.y < top.bottom)).toBe(true)
+    expect(rects.some((r) => r.y >= low.top)).toBe(true)
+    for (const r of rects) expect(r.y).toBeLessThan(low.bottom + margin)
+    e.destroy()
+  })
+
+  test('regions far from the viewport are not drawn', () => {
+    const water = { cloudTop: -2000, cloudBottom: -1900, surface: -1000 }
+    const canvas = document.createElement('canvas')
+    const e = engine(canvas, water, { regions: () => [{ top: 5000, bottom: 6000 }, { top: -6000, bottom: -5000 }] })
+    e.start()
+    expect(recorders.get(canvas)!).toEqual([])
+    e.destroy()
   })
 
   test('a cloud over text fades as a whole cloud, never tile by tile', () => {
