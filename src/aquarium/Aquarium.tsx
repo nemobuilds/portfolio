@@ -5,16 +5,26 @@ import type { AquariumEngine, AquariumMode, Zone } from './renderer'
 
 // Text that sits straight on the water: hero copy, section headings, contact text, footer.
 const CALM = '#top h1, #top p, main h2, #contact > div > *, body footer'
+// Controls and headings: fish swim behind these and are never drawn over them.
+const CLEAR = 'main a, main button, main h1, main h2, main h3, main [role="button"]'
 const GRID_FADE = 180
-/** The cloud band starts this far below the hero top: just under the floating navbar. */
-const CLOUD_TOP = 70
+/** The cloud band starts this far below the hero top: just under the floating navbar (16px + ~54px). */
+const CLOUD_TOP = 76
+/** Gap kept between the lowest cloud and the hero's first line of text. */
+const CLOUD_GAP = 8
 
-/** The hero is sky: clouds in a band under the navbar; the surface sits where the hero grid starts to fade. */
-function homeSky(): { cloudTop: number; surface: number } | null {
+/**
+ * The hero is sky: the clouds get the room between the navbar and the hero's first line
+ * of text (the greeting), so no tile overlaps the text or the photo; the surface sits
+ * where the hero grid starts to fade.
+ */
+function homeSky(): { cloudTop: number; cloudBottom: number; surface: number } | null {
   const hero = document.getElementById('top')
   if (!hero) return null
   const r = hero.getBoundingClientRect()
-  return { cloudTop: r.top + CLOUD_TOP, surface: r.bottom - GRID_FADE * 0.5 }
+  const first = hero.querySelector('p, h1')
+  const textTop = first ? first.getBoundingClientRect().top : r.top + CLOUD_TOP
+  return { cloudTop: r.top + CLOUD_TOP, cloudBottom: textTop - CLOUD_GAP, surface: r.bottom - GRID_FADE * 0.5 }
 }
 
 const rects = (selector: string) => Array.from(document.querySelectorAll(selector), (el) => el.getBoundingClientRect())
@@ -74,6 +84,7 @@ export function Aquarium({ mode }: { mode: AquariumMode }) {
         calmRects: () => (home ? rects(CALM) : []),
         gridZones: () => (home ? homeZones() : []),
         sky: home ? homeSky : undefined,
+        clearRects: () => (home ? rects(CLEAR) : []),
         // 404: the floor sits on the footer, never below the viewport bottom
         floorY: home ? footerTop : () => Math.min(footerTop(), window.innerHeight),
       })

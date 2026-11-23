@@ -14,7 +14,9 @@ export default function Hero() {
     <section
       id="top"
       aria-labelledby="hero-heading"
-      className="pt-[112px] pb-[48px] min-[760px]:pt-[136px] min-[760px]:pb-[64px]"
+      // Top padding leaves room for the sky's cloud band between the navbar and the greeting
+      // (src/aquarium: 6 tile rows, 10px on phones and 14px wider, plus a small gap).
+      className="pt-[150px] pb-[48px] min-[760px]:pt-[172px] min-[760px]:pb-[64px]"
     >
       {/* Same container as the other home sections (max 1200px, side padding inside it), so the hero
           text lines up with the Projects and Experience headings. */}

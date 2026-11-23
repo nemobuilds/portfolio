@@ -42,10 +42,25 @@ export type Cloud = { shape: ShapeName; x: number; row: number; seed: number }
 export const shapeCols = (shape: ShapeName) => Math.max(...CLOUD_SHAPES[shape].map((r) => r.length))
 export const shapeRows = (shape: ShapeName) => CLOUD_SHAPES[shape].length
 
-/** Height of the cloud band in px, so callers can keep it clear of the text. */
+/** Rows of tiles the band needs from its top to the bottom of its lowest cloud. */
+export const bandRows = () => Math.max(...BAND.map(([s, , row]) => row + shapeRows(s)))
+
+/** Height of the cloud band in px at the full tile size, so callers can keep it clear of the text. */
 export function bandHeight(width: number): number {
-  const cell = cloudCell(width)
-  return Math.max(...BAND.map(([s, , row]) => (row + shapeRows(s)) * cell))
+  return bandRows() * cloudCell(width)
+}
+
+/** Smallest tile that still reads as a cloud; below this the band is hidden. */
+export const MIN_CLOUD_CELL = 6
+
+/**
+ * The tile size that fits the band into `space` px (the gap between the navbar and the
+ * hero's first line of text): the normal size when it fits, smaller when it does not,
+ * and 0 (no clouds) when even the smallest tile would overlap the text.
+ */
+export function fitCell(width: number, space: number): number {
+  const cell = Math.min(cloudCell(width), Math.floor(space / bandRows()))
+  return cell >= MIN_CLOUD_CELL ? cell : 0
 }
 
 /** Total loop length in px: the screen width plus room for the widest cloud to leave and re-enter. */

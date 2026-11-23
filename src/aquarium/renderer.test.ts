@@ -28,17 +28,22 @@ function recordingContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
 
 const SKY_FILLS = new Set<string>(Object.values(CLOUD_TILES).map((t) => t.fill))
 
-function engine(canvas: HTMLCanvasElement, sky: { cloudTop: number; surface: number }, reducedMotion = true) {
+type Sky = { cloudTop: number; cloudBottom: number; surface: number }
+
+function engine(canvas: HTMLCanvasElement, sky: Sky, extra: Partial<AquariumOptions> = {}) {
   const opts: AquariumOptions = {
     mode: 'home',
-    reducedMotion,
+    reducedMotion: true,
     calmRects: () => [],
     gridZones: () => [],
     floorY: () => 1e6,
     sky: () => sky,
+    ...extra,
   }
   return createAquarium(canvas, opts)
 }
+
+const roomy = (top: number): Sky => ({ cloudTop: top, cloudBottom: top + bandHeight(window.innerWidth), surface: window.innerHeight })
 
 beforeEach(() => {
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (this: HTMLCanvasElement) {
@@ -56,7 +61,7 @@ afterEach(() => {
 describe('hero sky in the tank', () => {
   test('the whole viewport is sky: only cloud tiles are drawn, no fish, inside the cloud band', () => {
     const canvas = document.createElement('canvas')
-    const e = engine(canvas, { cloudTop: 70, surface: window.innerHeight })
+    const e = engine(canvas, roomy(70))
     e.start()
     const rects = recorders.get(canvas)!
     const clouds = rects.filter((r) => SKY_FILLS.has(r.fill))
@@ -71,7 +76,7 @@ describe('hero sky in the tank', () => {
 
   test('below the surface the fish are back, and the clouds are gone once the hero has scrolled away', () => {
     const canvas = document.createElement('canvas')
-    const e = engine(canvas, { cloudTop: -2000, surface: -1000 })
+    const e = engine(canvas, { cloudTop: -2000, cloudBottom: -1900, surface: -1000 })
     e.start()
     const rects = recorders.get(canvas)!
     expect(rects.some((r) => SKY_FILLS.has(r.fill))).toBe(false)
@@ -81,13 +86,44 @@ describe('hero sky in the tank', () => {
 
   test('reduced motion: the clouds stand still between redraws and no loop starts', () => {
     const canvas = document.createElement('canvas')
-    const e = engine(canvas, { cloudTop: 70, surface: window.innerHeight })
+    const e = engine(canvas, roomy(70))
     e.start()
     const first = recorders.get(canvas)!.map((r) => `${r.x},${r.y},${r.fill}`)
     window.dispatchEvent(new Event('scroll'))
     const second = recorders.get(canvas)!.map((r) => `${r.x},${r.y},${r.fill}`)
     expect(second).toEqual(first)
     expect(requestAnimationFrame).not.toHaveBeenCalled()
+    e.destroy()
+  })
+
+  test('a tight room shrinks the tiles so every cloud stays between the navbar and the text', () => {
+    const canvas = document.createElement('canvas')
+    const e = engine(canvas, { cloudTop: 76, cloudBottom: 76 + 42, surface: window.innerHeight })
+    e.start()
+    const clouds = recorders.get(canvas)!.filter((r) => SKY_FILLS.has(r.fill))
+    expect(clouds.length).toBeGreaterThan(0)
+    for (const r of clouds) {
+      expect(r.y).toBeGreaterThanOrEqual(76)
+      // fillRect starts 1px inside the tile, so the tile bottom is at most cloudBottom
+      expect(r.y - 1 + 7).toBeLessThanOrEqual(76 + 42)
+    }
+    e.destroy()
+  })
+
+  test('no room at all: no clouds rather than clouds over the text', () => {
+    const canvas = document.createElement('canvas')
+    const e = engine(canvas, { cloudTop: 76, cloudBottom: 96, surface: window.innerHeight })
+    e.start()
+    expect(recorders.get(canvas)!.some((r) => SKY_FILLS.has(r.fill))).toBe(false)
+    e.destroy()
+  })
+
+  test('fish never draw inside controls or headings', () => {
+    const canvas = document.createElement('canvas')
+    const whole = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight, width: window.innerWidth, height: window.innerHeight } as DOMRect
+    const e = engine(canvas, { cloudTop: -2000, cloudBottom: -1900, surface: -1000 }, { clearRects: () => [whole] })
+    e.start()
+    expect(recorders.get(canvas)!).toEqual([])
     e.destroy()
   })
 })

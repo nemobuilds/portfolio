@@ -4,7 +4,7 @@ import { CELL, clownfishAlpha, fishCount, fishHalfHeight, fishLength, makeFish, 
 import { sideClassify, type Cell } from './sideFish'
 import { initialAngler, stepAngler, type AnglerState } from './angler'
 import { buildSeabed, SEABED_ROWS } from './seabed'
-import { bandHeight, cloudCell, cloudCells, makeClouds, SHIMMER_S, skyFade, stepClouds, type Cloud } from './clouds'
+import { cloudCells, fitCell, makeClouds, SHIMMER_S, skyFade, stepClouds, type Cloud } from './clouds'
 import { waterColor } from '../Sections/Water'
 
 export type AquariumMode = 'home' | 'angler-only'
@@ -20,10 +20,13 @@ export type AquariumOptions = {
   /** Viewport y of the sea floor line. Defaults to the viewport bottom. */
   floorY?(): number
   /**
-   * The hero sky, in viewport px: where the cloud band starts, and the surface line.
+   * The hero sky, in viewport px: the room for the cloud band (between the navbar and
+   * the hero's first line of text) and the surface line. Clouds never leave that room.
    * Above the surface there are no fish or bubbles; they fade in over FADE px below it.
    */
-  sky?(): { cloudTop: number; surface: number } | null
+  sky?(): { cloudTop: number; cloudBottom: number; surface: number } | null
+  /** Viewport rects of controls and headings. Fish and bubbles never draw inside them. */
+  clearRects?(): DOMRect[]
 }
 
 export type AquariumEngine = { setDepth(d: number): void; start(): void; stop(): void; destroy(): void }
@@ -321,10 +324,11 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
   function drawClouds(t: number) {
     const sky = opts.sky?.()
     if (!ctx || !sky || clouds.length === 0) return
-    const cell = cloudCell(W)
-    if (sky.cloudTop + bandHeight(W) < 0 || sky.cloudTop > H) return
+    // the tiles shrink to fit between the navbar and the text, or the band is skipped
+    const cell = fitCell(W, sky.cloudBottom - sky.cloudTop)
+    if (!cell || sky.cloudBottom < 0 || sky.cloudTop > H) return
     const step = still ? 0 : Math.floor(t / SHIMMER_S)
-    const calm = opts.calmRects().filter((r) => r.bottom > sky.cloudTop && r.top < sky.cloudTop + bandHeight(W))
+    const calm = opts.calmRects().filter((r) => r.bottom > sky.cloudTop && r.top < sky.cloudBottom)
     const inCalm = (x: number, y: number) => calm.some((r) => x + cell > r.left && x < r.right && y + cell > r.top && y < r.bottom)
     ctx.font = fontFor(cell)
     for (const c of clouds) {
@@ -356,11 +360,15 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
     // the hero is sky: nothing from the water shows above the surface; it fades in below it
     const sky = opts.sky?.() ?? null
     const above = (py: number) => (sky ? skyFade(py, sky.surface, FADE) : 0)
+    // controls and headings: the fish swim behind them, so no tile is drawn inside one
+    const clear = (opts.clearRects?.() ?? []).filter((r) => r.bottom > 0 && r.top < H && r.width > 0)
+    const inClear = (px: number, py: number) =>
+      clear.some((r) => px + CS / 2 > r.left && px - CS / 2 < r.right && py + CS / 2 > r.top && py - CS / 2 < r.bottom)
     for (const b of bubbles) {
       const i = Math.floor(b.x / CS)
       const j = Math.floor((((b.y % H) + H) % H) / CS)
       const k = above((j + 0.5) * CS)
-      if (k >= 1) continue
+      if (k >= 1 || inClear((i + 0.5) * CS, (j + 0.5) * CS)) continue
       if (i >= 0 && i < cols) grid.set(j * cols + i, { glyph: 'o', bubble: true, fog: k, fish: false })
     }
     if (clownfishAlpha(depth) === 0) return grid
@@ -377,7 +385,7 @@ export function createAquarium(canvas: HTMLCanvasElement, opts: AquariumOptions)
       const put = (i: number, j: number, cell: Omit<Put, 'fog' | 'fish'>, px: number, py: number) => {
         if (i < 0 || j < 0 || i >= cols || j >= rows) return
         const k = above(py)
-        if (k >= 1) return
+        if (k >= 1 || inClear(px, py)) return
         const base = inCalm(px, py) ? Math.max(fog, CALM_FOG) : fog
         grid.set(j * cols + i, { ...cell, fish: true, fog: Math.max(base, k) })
       }

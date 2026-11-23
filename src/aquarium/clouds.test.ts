@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import {
   bandHeight,
+  bandRows,
+  fitCell,
+  MIN_CLOUD_CELL,
   CLOUD_CROSSING_S,
   CLOUD_TILES,
   cloudCell,
@@ -77,6 +80,21 @@ describe('cloud tiles', () => {
   test('the same step always draws the same cloud (a still frame for reduced motion)', () => {
     const [c] = makeClouds(1280)
     expect(cloudCells(c, 0)).toEqual(cloudCells(c, 0))
+  })
+})
+
+describe('fitCell', () => {
+  test('full-size tiles when the band fits the room', () => {
+    expect(fitCell(1280, bandHeight(1280))).toBe(14)
+    expect(fitCell(390, 66)).toBe(10)
+  })
+  test('smaller tiles when the room is tight, so the band never reaches the text', () => {
+    const cell = fitCell(1280, 50)
+    expect(cell).toBeGreaterThanOrEqual(MIN_CLOUD_CELL)
+    expect(cell * bandRows()).toBeLessThanOrEqual(50)
+  })
+  test('no clouds when even the smallest tile would not fit', () => {
+    expect(fitCell(390, MIN_CLOUD_CELL * bandRows() - 1)).toBe(0)
   })
 })
 
