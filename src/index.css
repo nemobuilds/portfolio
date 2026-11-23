@@ -17,7 +17,7 @@
   --glass-dark: rgb(44 52 92 / 0.82);
   --glass-edge: rgb(60 82 140 / 0.75);
   --serif-accent: #22345F;
-  --ember: #FF9A52;
+  --ember: #FFB582;
   --ink: #17161C;
   --cream: #F4EEE3;
 }
@@ -33,7 +33,7 @@
   --text: #17161C;
   --text-inverse: #F4F5F8;
   --text-secondary: #3A4058;
-  --accent: #F06A16;
+  --accent: #FF8237;
   --date: #9A3A0E;
   --scan: #FFFFFF;
   --focus-ring: #17161C;
@@ -54,8 +54,8 @@
   --text: #EFECE3;
   --text-inverse: #17161C;
   --text-secondary: #C3C7D2;
-  --accent: #F06A16;
-  --date: #FF9A52;
+  --accent: #FF8237;
+  --date: #FFB582;
   --scan: #F3F5F9;
   --focus-ring: #EFECE3;
   --focus-halo: #17161C;
@@ -77,7 +77,7 @@
   --text: #17161C;
   --text-inverse: #F4F5F8;
   --text-secondary: #3A4058;
-  --accent: #F06A16;
+  --accent: #FF8237;
   --date: #9A3A0E;
   --scan: #FFFFFF;
   --focus-ring: #17161C;

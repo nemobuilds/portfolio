@@ -10,7 +10,7 @@ export type PhoneSectionItem = {
 }
 
 const itemClass =
-  'flex min-h-11 flex-1 items-center justify-center text-[14px] font-semibold no-underline text-[#F4EEE3] last:text-[#F06A16]'
+  'flex min-h-11 flex-1 items-center justify-center text-[14px] font-semibold no-underline text-[#F4EEE3] last:text-[#FF8237]'
 
 export function PhoneSectionBar({ items }: { items: PhoneSectionItem[] }) {
   return (

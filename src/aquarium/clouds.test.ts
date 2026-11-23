@@ -64,7 +64,7 @@ describe('cloud tiles', () => {
 
   test('only sky colours, never the fish orange', () => {
     for (const c of makeClouds(1280)) for (const k of cloudCells(c, 0)) expect(sky.has(k.tile.fill)).toBe(true)
-    expect(sky.has('#FF7B1C')).toBe(false)
+    expect(sky.has('#FF8237')).toBe(false)
   })
 
   test('shimmer flips some glyphs between steps but never the tile colours', () => {

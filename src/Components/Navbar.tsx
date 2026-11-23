@@ -83,7 +83,7 @@ export function Navbar({ surface, current, backLink, hideThemeToggle }: Props) {
                     key={l.key}
                     to={l.to}
                     aria-current={isCurrent ? 'page' : undefined}
-                    className={`${linkBase} ${isCurrent ? 'underline decoration-[#F06A16] decoration-2 underline-offset-8' : ''}`}
+                    className={`${linkBase} ${isCurrent ? 'underline decoration-[#FF8237] decoration-2 underline-offset-8' : ''}`}
                   >
                     {l.label}
                   </Link>
